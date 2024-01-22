@@ -23,8 +23,3 @@ def illustrationPolymer(polymer):
         grid[y,x]=monomerNumber+1
     plt.pcolormesh(grid)
     plt.show()
-
-N=1000
-polymer=createPolymer(N)
-illustrationPolymer(polymer)
-    

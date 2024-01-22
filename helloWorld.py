@@ -9,3 +9,4 @@ print("Yes")
 def printHelloWorld():
     print("Hello World")
 print("Boller is back")
+print("Hei Astrid, du er søt, ser du dette?")

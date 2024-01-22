@@ -6,3 +6,5 @@ print("Hei Olivir")
 print("Kjører på koden min")
 print("Kjører dette Oliver?")
 print("Yes")
+def printHelloWorld():
+    print("Hello World")

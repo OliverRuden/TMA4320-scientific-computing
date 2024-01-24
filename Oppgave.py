@@ -84,3 +84,22 @@ def rotationGoBrrrr(polymer, monomer, positivRetning):
         delta x = delta y
     """
     return newPolymer
+
+def rotateManyTimes(N, Ns):
+    rotationsMade = 0
+    polymer = createPolymer(N)
+
+    for i in range(Ns):
+        monomer = np.random.randint(1, N + 1)
+        positivRetning = np.random.choice([True, False])
+
+        twistedPolymer = rotationGoBrrrr(polymer, monomer, positivRetning)
+        if validPolymer(twistedPolymer, N):
+            rotationsMade += 1
+            polymer = twistedPolymer
+
+    return polymer, rotationsMade
+
+pol, rot = rotateManyTimes(10, 5)
+illustrationPolymer(pol)
+print(rot)

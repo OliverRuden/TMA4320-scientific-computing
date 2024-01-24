@@ -53,30 +53,34 @@ def validPolymer(polymer, N):
 1 f) Implementerer rotasjon ov polymeret, som nevnt tidligere holdes opprundet midten fast.
 """
 def rotationGoBrrrr(polymer, monomer, positivRetning):
+    monomer -= 1
     middleMonomer = len(polymer)//2 #Finner midterste rundet opp, for å låse den...
+    x,y = polymer[monomer]
+    newPolymer = np.zeros((len(polymer),2)) #Lager et nytt polymer, fordi å jobbe inplace endret på dataen underveis
     if middleMonomer > monomer:
-        polymer[:monomer,0] = (2*positivRetning-1)*polymer[:monomer,1]
-        polymer[:monomer,1] = (1-2*positivRetning)*polymer[:monomer,0]
+        newPolymer[monomer:] = polymer[monomer:]
+        newPolymer[:monomer,0] = (2*positivRetning-1)*(polymer[:monomer,1]-y)+x
+        newPolymer[:monomer,1] = (1-2*positivRetning)*(polymer[:monomer,0]-x) + y
         """
         Positiv retning:
-        x = y
-        y = -x
+        delta x = delta y
+        delta y = - delta x
         Negativ retning:
-        x = -y
-        y = x
+        delta x = - delta y
+        delta y = delta x
 
         Bruker også at True kan brukes som 1 og False som 0
         """
-        return polymer
-
-    polymer[monomer+1:,0] = (1-2*positivRetning)*polymer[monomer+1:,1]
-    polymer[monomer+1:,1] = (2*positivRetning-1)*polymer[monomer+1:,0]
+        return newPolymer
+    newPolymer[:monomer+1] = polymer[:monomer+1]
+    newPolymer[monomer+1:,0] = (1-2*positivRetning)*(polymer[monomer+1:,1]-y)+x
+    newPolymer[monomer+1:,1] = (2*positivRetning-1)*(polymer[monomer+1:,0]-x)+y
     """
         Positiv retning:
-        y = x
-        x = -y
+        delta y = delta x
+        delta x = - delta y
         Negativ retning:
-        y = -x
-        x = y
+        delta y = - delta x
+        delta x = delta y
     """
-    return polymer
+    return newPolymer

@@ -90,7 +90,7 @@ def rotateManyTimes(N, Ns):
     polymer = createPolymer(N)
 
     for i in range(Ns):
-        monomer = np.random.randint(1, N + 1)
+        monomer = np.random.randint(2, N)
         positivRetning = np.random.choice([True, False])
 
         twistedPolymer = rotationGoBrrrr(polymer, monomer, positivRetning)
@@ -100,6 +100,6 @@ def rotateManyTimes(N, Ns):
 
     return polymer, rotationsMade
 
-pol, rot = rotateManyTimes(10, 5)
-illustrationPolymer(pol)
+pol, rot = rotateManyTimes(15, 10)
 print(rot)
+illustrationPolymer(pol)

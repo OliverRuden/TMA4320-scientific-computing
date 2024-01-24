@@ -100,6 +100,14 @@ def rotateManyTimes(N, Ns):
 
     return polymer, rotationsMade
 
-pol, rot = rotateManyTimes(15, 10)
-print(rot)
-illustrationPolymer(pol)
+
+"""
+Oppgave g)
+"""
+pol_4, rot_4 = rotateManyTimes(15, 4)
+print("Med 4 rotasjoner ble så mange gyldige: ", rot_4)
+illustrationPolymer(pol_4)
+np.savetxt()
+pol_1000, rot_1000 = rotateManyTimes(15,1000)
+print("Med 1000 rotasjoner ble så mange gyldige: ", rot_1000)
+illustrationPolymer(pol_1000)

@@ -112,3 +112,19 @@ pol_1000, rot_1000 = rotateManyTimes(15,1000)
 print("Med 1000 rotasjoner ble så mange gyldige: ", rot_1000)
 illustrationPolymer(pol_1000)
 np.savetxt('polymerArray15_1000.txt', pol_1000)
+
+"""
+1 i)
+plotte valid rotations
+"""
+
+def plotValidPercentage(min = 4, max = 500, Ns = 1000):
+    sizes = np.arange(min, max + 1, 10)
+    intSizes = sizes.astype(int)
+    print(intSizes[0])
+    # polymer, validRot = rotateManyTimes(intSizes, Ns)
+    valid = np.array([rotateManyTimes(i, Ns)[1] for i in intSizes])
+    plt.plot(intSizes, valid/Ns)
+    plt.show()
+
+# plotValidPercentage(10, 500)

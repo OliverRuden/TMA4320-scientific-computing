@@ -106,17 +106,17 @@ def rotateManyTimes(N, Ns):
     return polymer, rotationsMade
 
 
-"""
-Oppgave g)
-"""
-pol_4, rot_4 = rotateManyTimes(15, 4)
-print("Med 4 rotasjoner ble så mange gyldige: ", rot_4)
-illustrationPolymer(pol_4)
-np.savetxt('polymerArray15_4.txt', pol_4)
-pol_1000, rot_1000 = rotateManyTimes(15,1000)
-print("Med 1000 rotasjoner ble så mange gyldige: ", rot_1000)
-illustrationPolymer(pol_1000)
-np.savetxt('polymerArray15_1000.txt', pol_1000)
+# """
+# Oppgave g)
+# """
+# pol_4, rot_4 = rotateManyTimes(15, 4)
+# print("Med 4 rotasjoner ble så mange gyldige: ", rot_4)
+# illustrationPolymer(pol_4)
+# np.savetxt('polymerArray15_4.txt', pol_4)
+# pol_1000, rot_1000 = rotateManyTimes(15,1000)
+# print("Med 1000 rotasjoner ble så mange gyldige: ", rot_1000)
+# illustrationPolymer(pol_1000)
+# np.savetxt('polymerArray15_1000.txt', pol_1000)
 
 """
 1 i)
@@ -156,17 +156,17 @@ def calculateEnergy(polymer, V):
                 neighbourDictionary[temp] = [index]
     return total
 
-N = 1000
-V = np.zeros((N,N))-4*10**(-21)
-for i in range(N):
-    V[i,i] = 0
-    if i > 0:
-        V[i,i-1] = 0
-    if i < N-1:
-        V[i+1,i] = 0
-pol, rot = rotateManyTimes(15,1000)
-illustrationPolymer(pol)
-print(calculateEnergy(pol, V))
+# N = 1000
+# V = np.zeros((N,N))-4*10**(-21)
+# for i in range(N):
+#     V[i,i] = 0
+#     if i > 0:
+#         V[i,i-1] = 0
+#     if i < N-1:
+#         V[i+1,i] = 0
+# pol, rot = rotateManyTimes(15,1000)
+# illustrationPolymer(pol)
+# print(calculateEnergy(pol, V))
 
 """
 2 a)
@@ -197,7 +197,7 @@ def metropolisalgoritmen(polymer, V, Ns, T):
     return polymer, E_array
 
 
-polymer, E_array=metropolisalgoritmen(createPolymer(30),V,5000,400)
+# polymer, E_array=metropolisalgoritmen(createPolymer(30),V,5000,400)
 
-illustrationPolymer(polymer)
-print(E_array[-1])
+# illustrationPolymer(polymer)
+# print(E_array[-1])

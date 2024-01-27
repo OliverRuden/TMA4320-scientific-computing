@@ -26,13 +26,17 @@ def illustrationPolymer(polymer):
     grid -= int(N/2)                         # Setter bakgrunnsverdien til å være -N for å få synlighet blant lave N
     index = N//2
     position = np.copy(polymer.position)
+    direction = 0
     for firstMonomers in range(index,0,-1):
-        position += polymer.map[polymer.array[firstMonomers,0]]
+        direction = (direction + polymer.array[firstMonomers,0])%4
+        position += polymer.map[direction]
         grid[position[0],position[1]] = firstMonomers
+    direction = 0
     position = np.copy(polymer.position)
     grid[position[0],position[1]] = N//2 + 1
     for secondMonomers in range(index, N-1):
-        position += polymer.map[polymer.array[secondMonomers,1]]
+        direction = (direction + polymer.array[secondMonomers,1]-2)%4
+        position += polymer.map[direction]
         grid[position[0],position[1]] = secondMonomers+2
     plt.pcolormesh(grid)
     plt.show()
@@ -49,23 +53,27 @@ def validPolymer(polymer, N):
     coordinateSet.add((polymer.position[0], polymer.position[1]))
     index = N//2
     position = np.copy(polymer.position)
+    direction = 0
     for firstMonomers in range(index,0,-1):
         if polymer.array[firstMonomers][0] not in polymer.map:
             return False
         elif polymer.array[firstMonomers][1] not in polymer.map:
             return False
-        position += polymer.map[polymer.array[firstMonomers,0]]
+        direction = (direction + polymer.array[firstMonomers,0])%4
+        position += polymer.map[direction]
         if (position[0],position[1]) in coordinateSet:
             return False
         else:
             coordinateSet.add((position[0],position[1]))
+    direction = 0
     position = np.copy(polymer.position)
     for secondMonomers in range(index,N-1):
         if polymer.array[secondMonomers][0] not in polymer.map:
             return False
         elif polymer.array[secondMonomers][1] not in polymer.map:
             return False
-        position += polymer.map[polymer.array[secondMonomers,1]]
+        direction = (direction + polymer.array[secondMonomers,1]-2)%4
+        position += polymer.map[direction]
         if (position[0],position[1]) in coordinateSet:
             return False
         else:
@@ -81,7 +89,6 @@ def rotationGoBrrrr(polymer, monomer, positivRetning):
     middleMonomer = len(polymer.array)//2 #Finner midterste rundet opp, for å låse den...
     if middleMonomer > monomer:
         polymer.array[monomer,0] = (polymer.array[monomer,0] + 2*positivRetning-1) % 4
-        polymer.array[monomer-1,1] = (polymer.array[monomer-1,1] + 2*positivRetning-1) % 4
         """
         Positiv retning:
         delta x = delta y
@@ -94,7 +101,6 @@ def rotationGoBrrrr(polymer, monomer, positivRetning):
         """
         return polymer
     polymer.array[monomer,1] = (polymer.array[monomer,1] - 2*positivRetning+1) % 4
-    polymer.array[monomer+1,0] = (polymer.array[monomer+1,0] - 2*positivRetning+1) % 4
     """
         Positiv retning:
         delta y = delta x
@@ -149,7 +155,7 @@ def plotValidPercentage(min = 4, max = 500, Ns = 1000):
     plt.plot(intSizes, valid/Ns)
     plt.show()
 
-print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))
+#print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))
 
 pol, rot = rotateManyTimes(10,1000)
 print(rot)

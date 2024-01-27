@@ -37,30 +37,37 @@ def illustrationPolymer(polymer):
     plt.pcolormesh(grid)
     plt.show()
 
-# """
-# 1 e) Sjekker om intakt polymer
-# """
+"""
+1 e) Sjekker om intakt polymer
+"""
 
-# def validPolymer(polymer, N):
-#     if len(polymer) != N:
-#         return False
+def validPolymer(polymer, N):
+    if len(polymer.array) != N:
+        return False
     
-#     coordinateSet = set()
-#     coordinateSet.add((polymer[0, 0], polymer[0, 1]))
+    coordinateSet = set()
+    coordinateSet.add((polymer.position[0], polymer.position[1]))
+    index = N//2
+    position = np.copy(polymer.position)
+    for firstMonomers in range(index,0,-1):
+        if polymer.array[firstMonomers] not in polymer.map:
+            return False
+        position += polymer.map[polymer.array[firstMonomers,0]]
+        if (position[0],position[1]) in coordinateSet:
+            return False
+        else:
+            coordinateSet.add((position[0],position[1]))
+    position = np.copy(polymer.position)
+    for secondMonomers in range(index,N-1):
+        if polymer.array[secondMonomers] not in polymer.map:
+            return False
+        position += polymer.map[polymer.array[secondMonomers,1]]
+        if (position[0],position[1]) in coordinateSet:
+            return False
+        else:
+            coordinateSet.add((position[0],position[1]))
+    return True
 
-#     for index in range(1, N):
-#         if (polymer[index, 0], polymer[index, 1]) in coordinateSet:         # sjekker om andre monomer har samme koordinat
-#             return False
-#         else: 
-#             coordinateSet.add((polymer[index, 0], polymer[index, 1]))
-
-#         xDiff = np.abs(polymer[index, 0] - polymer[index - 1, 0])           # avstand i x til nabo-monomer
-#         yDiff = np.abs(polymer[index, 1] - polymer[index - 1, 1])           # avstand i y til nabo-monomer
-
-#         if xDiff + yDiff != 1:                                              
-#             return False
-        
-#     return True
 
 # """
 # 1 f) Implementerer rotasjon ov polymeret, som nevnt tidligere holdes opprundet midten fast.

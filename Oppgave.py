@@ -156,14 +156,18 @@ def calculateEnergy(polymer, V):
                 neighbourDictionary[temp] = [index]
     return total
 
+def makeDiagonalForceArray(N, background_value):
+    V = np.zeros((N,N))+background_value
+    for i in range(N):
+        V[i,i] = 0
+        if i > 0:
+            V[i,i-1] = 0
+        if i < N-1:
+            V[i+1,i] = 0
+    return V
+
 # N = 1000
-# V = np.zeros((N,N))-4*10**(-21)
-# for i in range(N):
-#     V[i,i] = 0
-#     if i > 0:
-#         V[i,i-1] = 0
-#     if i < N-1:
-#         V[i+1,i] = 0
+# V = makeDiagonalForceArray(N, -4*10**(-21))
 # pol, rot = rotateManyTimes(15,1000)
 # illustrationPolymer(pol)
 # print(calculateEnergy(pol, V))
@@ -192,12 +196,38 @@ def metropolisalgoritmen(polymer, V, Ns, T):
                 polymer = newpolymer
                 E = E_new
             E_array[i] = E
-
-    print(E_array[-10:])
     return polymer, E_array
 
+V=makeDiagonalForceArray(30,-4*10**(-21))
 
-# polymer, E_array=metropolisalgoritmen(createPolymer(30),V,5000,400)
+def illustrationOfOnePolymer(polymer):              # Returnerer Grid
+    N = len(polymer)                 
+    grid = np.zeros((N+1,N+1))        # Lager (N+1)*(N+1) grid
+    grid -= int(N/2)                         # Setter bakgrunnsverdien til å være -N for å få synlighet blant lave N
+    for monomerNumber in range(N):
+        x = int(polymer[monomerNumber, 0])  
+        y = int(polymer[monomerNumber, 1])
+        grid[y,x] = monomerNumber + 1        # Setter første monomer-verdi til å være 1
+    return grid
 
-# illustrationPolymer(polymer)
-# print(E_array[-1])
+def multiplePlotsPolymers(polymer1,polymer2, title1,title2):
+
+    #Sublot 1
+    grid_1 = illustrationOfOnePolymer(polymer1)
+    plt.subplot(1,2,1)
+    plt.title(title1)
+    plt.pcolormesh(grid_1)
+
+    #Subplot 2
+    grid_2 = illustrationOfOnePolymer(polymer2)
+    plt.subplot(1,2,2)
+    plt.title(title2)
+    plt.pcolormesh(grid_2)
+
+
+    plt.show()
+
+# polymer_high_temp, E_array_high_temp=metropolisalgoritmen(createPolymer(30),V,5000,350)
+# polymer_low_temp, E_array_low_temp=metropolisalgoritmen(createPolymer(30),V,5000,75)
+# multiplePlotsPolymers(polymer_high_temp, polymer_low_temp, "High temperature polymer", "Low temperature polymer")
+

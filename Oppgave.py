@@ -3,19 +3,24 @@ import matplotlib.pyplot as plt
 import timeit
 
 
+class Middle:
+    def __init__(self, x, y, N):
+        self.position = (x,y)
+        self.array = np.array([np.array((0,2)) for i in range(N)])
+        self.array[0][0] = -1
+        self.array[N-1][1] = -1
+
 """
 1 b) Her lager vi polymeret vårt, det er representert i et N*2 diagram, og vi har valgt å holde fast opprunnet midten hvis relevant
 """
 def createPolymer(N):
-    polymer = np.zeros((N, 2)) 
-    polymer[:, 1] = N // 2                                     # setter y-koordinat
-    polymer[:, 0] = np.array([i for i in range(N)])          # setter x-koordinat
-    return polymer
+    middle = Middle(N//2, N//2, N)    # setter x-koordinat
+    return middle
 """
 1 d) Her lager vi illustrasjon av polymeret vårt, det er representert med farge, der sterkere farge er monomer med høyere nummer
 """
 def illustrationPolymer(polymer):
-    N = len(polymer)                 
+    N = len(polymer.array)                 
     grid = np.zeros((N+1,N+1))        # Lager (N+1)*(N+1) grid
     grid -= int(N/2)                         # Setter bakgrunnsverdien til å være -N for å få synlighet blant lave N
     for monomerNumber in range(N):

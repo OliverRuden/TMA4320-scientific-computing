@@ -168,6 +168,11 @@ pol, rot = rotateManyTimes(15,1000)
 illustrationPolymer(pol)
 print(calculateEnergy(pol, V))
 
+"""
+2 a)
+Her implementerer vi metropolisalgoritmen
+"""
+
 def metropolisalgoritmen(polymer, V, Ns, T):
     E_array=np.zeros(Ns)
     E = calculateEnergy(polymer, V)

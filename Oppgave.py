@@ -117,47 +117,42 @@ def rotateManyTimes(N, Ns):
         if validPolymer(polymer, N):
             rotationsMade += 1
         else:
-            monomer -= 1
-            middleMonomer = len(polymer.array)//2 #Finner midterste rundet opp, for å låse den...
-            if middleMonomer > monomer:
-                polymer.array[monomer,0] = (polymer.array[monomer,0] - 2*positivRetning+1) % 4
-                polymer.array[monomer-1,1] = (polymer.array[monomer-1,1] - 2*positivRetning+1) % 4
-            else:
-                polymer.array[monomer,1] = (polymer.array[monomer,1] + 2*positivRetning-1) % 4
-                polymer.array[monomer+1,0] = (polymer.array[monomer+1,0] + 2*positivRetning-1) % 4
+            polymer = rotationGoBrrrr(polymer,monomer,(positivRetning+1)%2)
 
     return polymer, rotationsMade
 
-pol,rot = rotateManyTimes(10,1000)
-print(pol.array)
+
+"""
+Oppgave g)
+"""
+def saveTwoPolymers():
+    pol_4, rot_4 = rotateManyTimes(15, 4)
+    print("Med 4 rotasjoner ble så mange gyldige: ", rot_4)
+    illustrationPolymer(pol_4)
+    np.savetxt('polymerArray15_4.txt', pol_4)
+    pol_1000, rot_1000 = rotateManyTimes(15,1000)
+    print("Med 1000 rotasjoner ble så mange gyldige: ", rot_1000)
+    illustrationPolymer(pol_1000)
+    np.savetxt('polymerArray15_1000.txt', pol_1000)
+
+"""
+1 i)
+plotte valid rotations
+"""
+
+def plotValidPercentage(min = 4, max = 500, Ns = 1000):
+    sizes = np.arange(min, max + 1, 10)
+    intSizes = sizes.astype(int)
+    print(intSizes[0])
+    # polymer, validRot = rotateManyTimes(intSizes, Ns)
+    valid = np.array([rotateManyTimes(i, Ns)[1] for i in intSizes])
+    plt.plot(intSizes, valid/Ns)
+    plt.show()
+
+print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))
+
+pol, rot = rotateManyTimes(10,1000)
+print(rot)
 illustrationPolymer(pol)
-print(timeit.timeit('rotateManyTimes(150,10000)',"from __main__ import rotateManyTimes",number = 10))
 
-
-# """
-# Oppgave g)
-# """
-# pol_4, rot_4 = rotateManyTimes(15, 4)
-# print("Med 4 rotasjoner ble så mange gyldige: ", rot_4)
-# illustrationPolymer(pol_4)
-# np.savetxt('polymerArray15_4.txt', pol_4)
-# pol_1000, rot_1000 = rotateManyTimes(15,1000)
-# print("Med 1000 rotasjoner ble så mange gyldige: ", rot_1000)
-# illustrationPolymer(pol_1000)
-# np.savetxt('polymerArray15_1000.txt', pol_1000)
-
-# """
-# 1 i)
-# plotte valid rotations
-# """
-
-# def plotValidPercentage(min = 4, max = 500, Ns = 1000):
-#     sizes = np.arange(min, max + 1, 10)
-#     intSizes = sizes.astype(int)
-#     print(intSizes[0])
-#     # polymer, validRot = rotateManyTimes(intSizes, Ns)
-#     valid = np.array([rotateManyTimes(i, Ns)[1] for i in intSizes])
-#     plt.plot(intSizes, valid/Ns)
-#     plt.show()
-
-# # plotValidPercentage(10, 500)
+plotValidPercentage(10, 500)

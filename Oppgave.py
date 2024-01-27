@@ -201,3 +201,28 @@ def metropolisalgoritmen(polymer, V, Ns, T):
 
 # illustrationPolymer(polymer)
 # print(E_array[-1])
+
+"""
+2b) Plotte energien
+"""
+
+def plotEnergy(polymer, V, Ns, T):
+    E_array = metropolisalgoritmen(polymer, V, Ns, T)[1]
+    plt.rcParams.update({'font.size': 20})
+    plt.figure(figsize = (10, 7))
+    plt.plot(E_array, label = 'Energi')
+    plt.xlabel(r'Monte Carlo-steg $t$')
+    plt.ylabel('Energi')
+    plt.title('Energi som funksjon av Monte Carlo-steg')
+    plt.show()
+
+# N = 30
+# V = np.zeros((N,N))-4*10**(-21)
+# for i in range(N):
+#     V[i,i] = 0
+#     if i > 0:
+#         V[i,i-1] = 0
+#     if i < N-1:
+#         V[i+1,i] = 0
+
+# plotEnergy(createPolymer(30), V, 5000, 370)

@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import timeit
 
+"""
+Definerer viktige konstanter
+"""
+k_b=1.38*10**(-23)
 
 """
 1 b) Her lager vi polymeret vårt, det er representert i et N*2 diagram, og vi har valgt å holde fast opprunnet midten hvis relevant
@@ -92,7 +96,7 @@ def rotateManyTimes(N, Ns):
 
     for i in range(Ns):
         monomer = np.random.randint(2, N)
-        positivRetning = np.random.choice([True, False])
+        positivRetning = np.random.randint(0,2)
 
         twistedPolymer = rotationGoBrrrr(polymer, monomer, positivRetning)
         if validPolymer(twistedPolymer, N):
@@ -135,7 +139,7 @@ def plotValidPercentage(min = 4, max = 500, Ns = 1000):
 Regne energien til et polymer
 """
 
-def calculateEnergy(V, polymer):
+def calculateEnergy(polymer, V):
     total = 0
     neighbourDictionary = {}
     direction = [[0,1],[0,-1],[1,0],[-1,0]]
@@ -151,14 +155,44 @@ def calculateEnergy(V, polymer):
             else:
                 neighbourDictionary[temp] = [index]
     return total
-# N = 1000
-# V = np.zeros((N,N))-1
-# for i in range(N):
-#     V[i,i] = 0
-#     if i > 0:
-#         V[i,i-1] = 0
-#     if i < N-1:
-#         V[i+1,i] = 0
-# pol, rot = rotateManyTimes(15,1000)
-# illustrationPolymer(pol)
-# print(calculateEnergy(V,pol))
+
+N = 1000
+V = np.zeros((N,N))-4*10**(-21)
+for i in range(N):
+    V[i,i] = 0
+    if i > 0:
+        V[i,i-1] = 0
+    if i < N-1:
+        V[i+1,i] = 0
+pol, rot = rotateManyTimes(15,1000)
+illustrationPolymer(pol)
+print(calculateEnergy(pol, V))
+
+def metropolisalgoritmen(polymer, V, Ns, T):
+    E_array=np.zeros(Ns)
+    E = calculateEnergy(polymer, V)
+    i=0
+    N=len(polymer)    
+    beta = 1/(k_b*T)
+    E_array[0]=E
+    while i<Ns-1:
+        newpolymer = rotationGoBrrrr(polymer, np.random.randint(2, N), np.random.randint(0,2))
+        if validPolymer(newpolymer,N):
+            i+=1
+            E_new=calculateEnergy(newpolymer, V)
+            if E_new < E:
+                polymer = newpolymer
+                E = E_new
+            elif np.random.uniform() < np.exp(-beta*(E_new-E)):
+                polymer = newpolymer
+                E = E_new
+            E_array[i] = E
+
+    print(E_array[-10:])
+    return polymer, E_array
+
+
+polymer, E_array=metropolisalgoritmen(createPolymer(30),V,5000,400)
+
+illustrationPolymer(polymer)
+print(E_array[-1])

@@ -129,3 +129,36 @@ def plotValidPercentage(min = 4, max = 500, Ns = 1000):
     plt.show()
 
 # plotValidPercentage(10, 500)
+
+"""
+1 j)
+Regne energien til et polymer
+"""
+
+def calculateEnergy(V, polymer):
+    total = 0
+    neighbourDictionary = {}
+    direction = [[0,1],[0,-1],[1,0],[-1,0]]
+    for index, coordinates in enumerate(polymer):
+        cordTuple = (coordinates[0],coordinates[1])
+        if cordTuple in neighbourDictionary:
+            for n in neighbourDictionary[cordTuple]:
+                total += V[index][n]
+        for i in direction:
+            temp = (coordinates[0]+i[0],coordinates[1]+i[1])
+            if temp in neighbourDictionary:
+                neighbourDictionary[temp].append(index)
+            else:
+                neighbourDictionary[temp] = [index]
+    return total
+# N = 1000
+# V = np.zeros((N,N))-1
+# for i in range(N):
+#     V[i,i] = 0
+#     if i > 0:
+#         V[i,i-1] = 0
+#     if i < N-1:
+#         V[i+1,i] = 0
+# pol, rot = rotateManyTimes(15,1000)
+# illustrationPolymer(pol)
+# print(calculateEnergy(V,pol))

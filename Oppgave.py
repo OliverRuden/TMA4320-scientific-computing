@@ -260,3 +260,4 @@ def multiplePlotsPolymers(polymer1,polymer2, title1,title2):
 
 # illustrationPolymer(polymer)
 # print(E_array[-1])
+print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))

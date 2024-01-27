@@ -50,7 +50,9 @@ def validPolymer(polymer, N):
     index = N//2
     position = np.copy(polymer.position)
     for firstMonomers in range(index,0,-1):
-        if polymer.array[firstMonomers] not in polymer.map:
+        if polymer.array[firstMonomers][0] not in polymer.map:
+            return False
+        elif polymer.array[firstMonomers][1] not in polymer.map:
             return False
         position += polymer.map[polymer.array[firstMonomers,0]]
         if (position[0],position[1]) in coordinateSet:
@@ -59,7 +61,9 @@ def validPolymer(polymer, N):
             coordinateSet.add((position[0],position[1]))
     position = np.copy(polymer.position)
     for secondMonomers in range(index,N-1):
-        if polymer.array[secondMonomers] not in polymer.map:
+        if polymer.array[secondMonomers][0] not in polymer.map:
+            return False
+        elif polymer.array[secondMonomers][1] not in polymer.map:
             return False
         position += polymer.map[polymer.array[secondMonomers,1]]
         if (position[0],position[1]) in coordinateSet:
@@ -69,56 +73,65 @@ def validPolymer(polymer, N):
     return True
 
 
-# """
-# 1 f) Implementerer rotasjon ov polymeret, som nevnt tidligere holdes opprundet midten fast.
-# """
-# def rotationGoBrrrr(polymer, monomer, positivRetning):
-#     monomer -= 1
-#     middleMonomer = len(polymer)//2 #Finner midterste rundet opp, for å låse den...
-#     x,y = polymer[monomer]
-#     newPolymer = np.zeros((len(polymer),2)) #Lager et nytt polymer, fordi å jobbe inplace endret på dataen underveis
-#     if middleMonomer > monomer:
-#         newPolymer[monomer:] = polymer[monomer:]
-#         newPolymer[:monomer,0] = (2*positivRetning-1)*(polymer[:monomer,1]-y)+x
-#         newPolymer[:monomer,1] = (1-2*positivRetning)*(polymer[:monomer,0]-x) + y
-#         """
-#         Positiv retning:
-#         delta x = delta y
-#         delta y = - delta x
-#         Negativ retning:
-#         delta x = - delta y
-#         delta y = delta x
+"""
+1 f) Implementerer rotasjon ov polymeret, som nevnt tidligere holdes opprundet midten fast.
+"""
+def rotationGoBrrrr(polymer, monomer, positivRetning):
+    monomer -= 1
+    middleMonomer = len(polymer.array)//2 #Finner midterste rundet opp, for å låse den...
+    if middleMonomer > monomer:
+        polymer.array[monomer,0] = (polymer.array[monomer,0] + 2*positivRetning-1) % 4
+        polymer.array[monomer-1,1] = (polymer.array[monomer-1,1] + 2*positivRetning-1) % 4
+        """
+        Positiv retning:
+        delta x = delta y
+        delta y = - delta x
+        Negativ retning:
+        delta x = - delta y
+        delta y = delta x
 
-#         Bruker også at True kan brukes som 1 og False som 0
-#         """
-#         return newPolymer
-#     newPolymer[:monomer+1] = polymer[:monomer+1]
-#     newPolymer[monomer+1:,0] = (1-2*positivRetning)*(polymer[monomer+1:,1]-y)+x
-#     newPolymer[monomer+1:,1] = (2*positivRetning-1)*(polymer[monomer+1:,0]-x)+y
-#     """
-#         Positiv retning:
-#         delta y = delta x
-#         delta x = - delta y
-#         Negativ retning:
-#         delta y = - delta x
-#         delta x = delta y
-#     """
-#     return newPolymer
+        Bruker også at True kan brukes som 1 og False som 0
+        """
+        return polymer
+    polymer.array[monomer,1] = (polymer.array[monomer,1] - 2*positivRetning+1) % 4
+    polymer.array[monomer+1,0] = (polymer.array[monomer+1,0] - 2*positivRetning+1) % 4
+    """
+        Positiv retning:
+        delta y = delta x
+        delta x = - delta y
+        Negativ retning:
+        delta y = - delta x
+        delta x = delta y
+    """
+    return polymer
 
-# def rotateManyTimes(N, Ns):
-#     rotationsMade = 0
-#     polymer = createPolymer(N)
+def rotateManyTimes(N, Ns):
+    rotationsMade = 0
+    polymer = createPolymer(N)
 
-#     for i in range(Ns):
-#         monomer = np.random.randint(2, N)
-#         positivRetning = np.random.choice([True, False])
+    for i in range(Ns):
+        monomer = np.random.randint(2, N)
+        positivRetning = np.random.randint(0,2)
 
-#         twistedPolymer = rotationGoBrrrr(polymer, monomer, positivRetning)
-#         if validPolymer(twistedPolymer, N):
-#             rotationsMade += 1
-#             polymer = twistedPolymer
+        polymer = rotationGoBrrrr(polymer, monomer, positivRetning)
+        if validPolymer(polymer, N):
+            rotationsMade += 1
+        else:
+            monomer -= 1
+            middleMonomer = len(polymer.array)//2 #Finner midterste rundet opp, for å låse den...
+            if middleMonomer > monomer:
+                polymer.array[monomer,0] = (polymer.array[monomer,0] - 2*positivRetning+1) % 4
+                polymer.array[monomer-1,1] = (polymer.array[monomer-1,1] - 2*positivRetning+1) % 4
+            else:
+                polymer.array[monomer,1] = (polymer.array[monomer,1] + 2*positivRetning-1) % 4
+                polymer.array[monomer+1,0] = (polymer.array[monomer+1,0] + 2*positivRetning-1) % 4
 
-#     return polymer, rotationsMade
+    return polymer, rotationsMade
+
+pol,rot = rotateManyTimes(10,1000)
+print(pol.array)
+illustrationPolymer(pol)
+print(timeit.timeit('rotateManyTimes(150,10000)',"from __main__ import rotateManyTimes",number = 10))
 
 
 # """

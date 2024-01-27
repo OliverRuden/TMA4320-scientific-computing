@@ -31,7 +31,7 @@ def illustrationPolymer(polymer):
         direction = (direction + polymer.array[firstMonomers,0])%4
         position += polymer.map[direction]
         grid[position[0],position[1]] = firstMonomers
-    direction = 0
+    direction = 2
     position = np.copy(polymer.position)
     grid[position[0],position[1]] = N//2 + 1
     for secondMonomers in range(index, N-1):
@@ -65,7 +65,7 @@ def validPolymer(polymer, N):
             return False
         else:
             coordinateSet.add((position[0],position[1]))
-    direction = 0
+    direction = 2
     position = np.copy(polymer.position)
     for secondMonomers in range(index,N-1):
         if polymer.array[secondMonomers][0] not in polymer.map:
@@ -155,10 +155,10 @@ def plotValidPercentage(min = 4, max = 500, Ns = 1000):
     plt.plot(intSizes, valid/Ns)
     plt.show()
 
-#print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))
+print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))
 
-pol, rot = rotateManyTimes(10,1000)
-print(rot)
-illustrationPolymer(pol)
+# pol, rot = rotateManyTimes(10,1000)
+# print(rot)
+# illustrationPolymer(pol)
 
-plotValidPercentage(10, 500)
+# plotValidPercentage(10, 500)

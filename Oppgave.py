@@ -198,7 +198,34 @@ def metropolisalgoritmen(polymer, V, Ns, T):
             E_array[i] = E
     return polymer, E_array
 
-V=makeDiagonalForceArray(30,-4*10**(-21))
+"""
+2b) Plotte energien
+"""
+
+def plotEnergy(polymer, V, Ns, T):
+    E_array = metropolisalgoritmen(polymer, V, Ns, T)[1]
+    plt.rcParams.update({'font.size': 20})
+    plt.figure(figsize = (10, 7))
+    plt.plot(E_array, label = 'Energi')
+    plt.xlabel(r'Monte Carlo-steg $t$')
+    plt.ylabel('Energi')
+    plt.title('Energi som funksjon av Monte Carlo-steg')
+    plt.show()
+
+# N = 30
+# V = np.zeros((N,N))-4*10**(-21)
+# for i in range(N):
+#     V[i,i] = 0
+#     if i > 0:
+#         V[i,i-1] = 0
+#     if i < N-1:
+#         V[i+1,i] = 0
+
+# plotEnergy(createPolymer(30), V, 5000, 370)
+
+"""
+2c) Illustrere de to polymerene like
+"""
 
 def illustrationOfOnePolymer(polymer):              # Returnerer Grid
     N = len(polymer)                 
@@ -224,10 +251,12 @@ def multiplePlotsPolymers(polymer1,polymer2, title1,title2):
     plt.title(title2)
     plt.pcolormesh(grid_2)
 
-
     plt.show()
 
+# V=makeDiagonalForceArray(30,-4*10**(-21))
 # polymer_high_temp, E_array_high_temp=metropolisalgoritmen(createPolymer(30),V,5000,350)
 # polymer_low_temp, E_array_low_temp=metropolisalgoritmen(createPolymer(30),V,5000,75)
 # multiplePlotsPolymers(polymer_high_temp, polymer_low_temp, "High temperature polymer", "Low temperature polymer")
 
+# illustrationPolymer(polymer)
+# print(E_array[-1])

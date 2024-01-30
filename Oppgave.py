@@ -259,4 +259,25 @@ def multiplePlotsPolymers(polymer1,polymer2, title1,title2):
 
 # illustrationPolymer(polymer)
 # print(E_array[-1])
+    
 print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))
+
+"""
+2e) Beregne forventningsverdi og standardavvik til energien
+"""
+
+def computeAverageEnergyAndSTD(V, T, Ns=1500, N=30):
+    polymer = createPolymer(N)
+    newpolymer, energy = metropolisalgoritmen(polymer, V, Ns, T)
+    importantEnergy = energy[1000:]
+    return np.average(importantEnergy), np.std(importantEnergy, ddof=1)
+
+def plotExpectedAndSTDEnergy(V,lowTemp, highTemp, TempStep, Ns=1500, N=30):
+    TempArray = np.arange(lowTemp,highTemp,TempStep)
+    expectedValue, standardDeviation = np.zeros(len(TempArray)), np.zeros(len(TempArray))
+    for temp_index in range(len(TempArray)):
+        expectedValue[temp_index], standardDeviation[temp_index] = computeAverageEnergyAndSTD(V, TempArray[temp_index], Ns, N)
+    plt.errorbar(TempArray, expectedValue, yerr = standardDeviation)
+    plt.show()
+
+# plotExpectedAndSTDEnergy(V, lowTemp=10,highTemp=1000,TempStep=30)

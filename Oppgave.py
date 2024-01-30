@@ -346,8 +346,8 @@ def calculateDiameterDepresso(polymer):
     maxDist = 0
     for i in range(len(polymer)):
         for j in range(i+1, len(polymer)):
-            s = np.sum(np.abs(polymer[i]-polymer[j]))
+            s = np.sum((polymer[i]-polymer[j])**2)
             if s > maxDist:
                 maxDist = s
-    return maxDist
+    return np.sqrt(maxDist)
 

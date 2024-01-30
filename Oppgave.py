@@ -155,9 +155,9 @@ def plotValidPercentage(min = 4, max = 500, Ns = 1000):
     plt.plot(intSizes, valid/Ns)
     plt.show()
 
-print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))
+# print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))
 
-# pol, rot = rotateManyTimes(10,1000)
+# pol, rot = rotateManyTimes(10,100000)
 # print(rot)
 # illustrationPolymer(pol)
 

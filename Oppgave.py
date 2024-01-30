@@ -7,40 +7,25 @@ Definerer viktige konstanter
 """
 k_b=1.38*10**(-23)
 
-class Middle:
-    def __init__(self, x, y, N):
-        self.position = np.array([x,y])
-        self.beforeMiddle = np.array([0 for i in range(N//2)])
-        self.afterMiddle = np.array([2 for i in range((N-1)//2)])
-        self.map = {0:np.array([0,-1]), 1:np.array([1,0]), 2:np.array([0,1]),3:np.array([-1,0])}
-
 """
 1 b) Her lager vi polymeret vårt, det er representert i et N*2 diagram, og vi har valgt å holde fast opprunnet midten hvis relevant
 """
 def createPolymer(N):
-    middle = Middle(N//2, N//2, N)    # setter x-koordinat
-    return middle
+    polymer = np.zeros((N, 2)) 
+    polymer[:, 1] = N // 2                                     # setter y-koordinat
+    polymer[:, 0] = np.array([i for i in range(N)])          # setter x-koordinat
+    return polymer
 """
 1 d) Her lager vi illustrasjon av polymeret vårt, det er representert med farge, der sterkere farge er monomer med høyere nummer
 """
 def illustrationPolymer(polymer):
-    N = len(polymer.beforeMiddle) + len(polymer.afterMiddle) + 1        
+    N = len(polymer)                 
     grid = np.zeros((N+1,N+1))        # Lager (N+1)*(N+1) grid
     grid -= int(N/2)                         # Setter bakgrunnsverdien til å være -N for å få synlighet blant lave N
-    index = N//2
-    position = np.copy(polymer.position)
-    direction = 0
-    for firstMonomers in range(index-1,-1,-1):
-        direction = (direction + polymer.beforeMiddle[firstMonomers])%4
-        position += polymer.map[direction]
-        grid[position[0],position[1]] = firstMonomers + 1
-    direction = 2
-    position = np.copy(polymer.position)
-    grid[position[0],position[1]] = index + 1
-    for secondMonomers in range(0, len(polymer.afterMiddle)):
-        direction = (direction + polymer.afterMiddle[secondMonomers]-2)%4
-        position += polymer.map[direction]
-        grid[position[0],position[1]] = secondMonomers+ index + 2
+    for monomerNumber in range(N):
+        x = int(polymer[monomerNumber, 0])  
+        y = int(polymer[monomerNumber, 1])
+        grid[y,x] = monomerNumber + 1
     plt.pcolormesh(grid)
     plt.show()
 
@@ -49,43 +34,38 @@ def illustrationPolymer(polymer):
 """
 
 def validPolymer(polymer, N):
-    if len(polymer.beforeMiddle) + len(polymer.afterMiddle) + 1 != N:
+    if len(polymer) != N:
         return False
+    
     coordinateSet = set()
-    coordinateSet.add((polymer.position[0], polymer.position[1]))
-    index = N//2
-    position = np.copy(polymer.position)
-    direction = 0
-    for firstMonomers in range(index-1,-1,-1):
-        if polymer.beforeMiddle[firstMonomers] not in polymer.map:
+    coordinateSet.add((polymer[0, 0], polymer[0, 1]))
+
+    for index in range(1, N):
+        if (polymer[index, 0], polymer[index, 1]) in coordinateSet:         # sjekker om andre monomer har samme koordinat
             return False
-        direction = (direction + polymer.beforeMiddle[firstMonomers])%4
-        position += polymer.map[direction]
-        if (position[0],position[1]) in coordinateSet:
+        else: 
+            coordinateSet.add((polymer[index, 0], polymer[index, 1]))
+
+        xDiff = np.abs(polymer[index, 0] - polymer[index - 1, 0])           # avstand i x til nabo-monomer
+        yDiff = np.abs(polymer[index, 1] - polymer[index - 1, 1])           # avstand i y til nabo-monomer
+
+        if xDiff + yDiff != 1:                                              
             return False
-        else:
-            coordinateSet.add((position[0],position[1]))
-    direction = 2
-    position = np.copy(polymer.position)
-    for secondMonomers in range(0,len(polymer.afterMiddle)):
-        if polymer.afterMiddle[secondMonomers] not in polymer.map:
-            return False
-        direction = (direction + polymer.afterMiddle[secondMonomers]-2)%4
-        position += polymer.map[direction]
-        if (position[0],position[1]) in coordinateSet:
-            return False
-        else:
-            coordinateSet.add((position[0],position[1]))
+        
     return True
 
 """
 1 f) Implementerer rotasjon ov polymeret, som nevnt tidligere holdes opprundet midten fast.
 """
 def rotationGoBrrrr(polymer, monomer, positivRetning):
-    monomer -= 2
-    middleMonomer = len(polymer.beforeMiddle)-1 #Finner midterste rundet opp, for å låse den...
+    monomer -= 1
+    middleMonomer = len(polymer)//2 #Finner midterste rundet opp, for å låse den...
+    x,y = polymer[monomer]
+    newPolymer = np.zeros((len(polymer),2)) #Lager et nytt polymer, fordi å jobbe inplace endret på dataen underveis
     if middleMonomer > monomer:
-        polymer.beforeMiddle[monomer] = (polymer.beforeMiddle[monomer] + 2*positivRetning-1) % 4
+        newPolymer[monomer:] = polymer[monomer:]
+        newPolymer[:monomer,0] = (2*positivRetning-1)*(polymer[:monomer,1]-y)+x
+        newPolymer[:monomer,1] = (1-2*positivRetning)*(polymer[:monomer,0]-x) + y
         """
         Positiv retning:
         delta x = delta y
@@ -96,8 +76,10 @@ def rotationGoBrrrr(polymer, monomer, positivRetning):
 
         Bruker også at True kan brukes som 1 og False som 0
         """
-        return polymer
-    polymer.afterMiddle[monomer-middleMonomer] = (polymer.afterMiddle[monomer-middleMonomer] - 2*positivRetning+1) % 4
+        return newPolymer
+    newPolymer[:monomer+1] = polymer[:monomer+1]
+    newPolymer[monomer+1:,0] = (1-2*positivRetning)*(polymer[monomer+1:,1]-y)+x
+    newPolymer[monomer+1:,1] = (2*positivRetning-1)*(polymer[monomer+1:,0]-x)+y
     """
         Positiv retning:
         delta y = delta x
@@ -106,7 +88,7 @@ def rotationGoBrrrr(polymer, monomer, positivRetning):
         delta y = - delta x
         delta x = delta y
     """
-    return polymer
+    return newPolymer
 
 def rotateManyTimes(N, Ns):
     rotationsMade = 0
@@ -116,11 +98,10 @@ def rotateManyTimes(N, Ns):
         monomer = np.random.randint(2, N)
         positivRetning = np.random.randint(0,2)
 
-        polymer = rotationGoBrrrr(polymer, monomer, positivRetning)
-        if validPolymer(polymer, N):
+        twistedPolymer = rotationGoBrrrr(polymer, monomer, positivRetning)
+        if validPolymer(twistedPolymer, N):
             rotationsMade += 1
-        else:
-            polymer = rotationGoBrrrr(polymer,monomer,(positivRetning+1)%2)
+            polymer = twistedPolymer
 
     return polymer, rotationsMade
 
@@ -150,12 +131,6 @@ def plotValidPercentage(min = 4, max = 500, Ns = 1000):
     valid = np.array([rotateManyTimes(i, Ns)[1] for i in intSizes])
     plt.plot(intSizes, valid/Ns)
     plt.show()
-
-# print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))
-
-# pol, rot = rotateManyTimes(10,100000)
-# print(rot)
-# illustrationPolymer(pol)
 
 # plotValidPercentage(10, 500)
 

@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import timeit
+from scipy.spatial import ConvexHull
 
 """
 Definerer viktige konstanter
@@ -173,18 +174,42 @@ def makeDiagonalForceArray(N, background_value):
 
 """
 2 a)
-Her implementerer vi metropolisalgoritmen
+Her implementerer vi metropolisalgoritmen, har også lagt inn calculateDiameterDepresso her fra 2g), siden den brukes i metropolisalgoritmen
 """
 
-def calculateDiameter(polymer):            #Her skal vi skrive funksjonen for å regne ut diameteren til et polymer, MÅ ENDRES PÅ
-    return 10
+def calculateDiameterDepresso(polymer):
+    maxDist = 0
+    for i in range(len(polymer)):
+        for j in range(i+1, len(polymer)):
+            s = np.sum((polymer[i]-polymer[j])**2)
+            if s > maxDist:
+                maxDist = s
+    return np.sqrt(maxDist)
+
+# def calculateDiameterNotSoDepresso(polymer):                    #This is with convex hull, but doesn't seem to work cause the points are to colinear
+
+#     # Compute the convex hull of the points
+#     hull = ConvexHull(polymer)
+
+#     # Initialize maximum distance to zero
+#     max_distance = 0.0
+
+#     # Iterate through all pairs of vertices in the convex hull
+#     for i in range(len(hull.vertices)):
+#         for j in range(i + 1, len(hull.vertices)):
+#             distance = np.linalg.norm(polymer[hull.vertices[i]] - polymer[hull.vertices[j]])
+#             if distance > max_distance:
+#                 max_distance = distance
+
+#     # Return the maximum distance
+#     return max_distance
 
 def metropolisalgoritmen(polymer, V, Ns, T, includeDiamter = False):
     E_array=np.zeros(Ns)
     E = calculateEnergy(polymer, V)
     if includeDiamter:
         d_array=np.zeros(Ns)
-        d = calculateDiameter(polymer)
+        d = calculateDiameterDepresso(polymer)
     i=0
     N=len(polymer)    
     beta = 1/(k_b*T)
@@ -195,7 +220,7 @@ def metropolisalgoritmen(polymer, V, Ns, T, includeDiamter = False):
             i+=1
             E_new=calculateEnergy(newpolymer, V)
             if includeDiamter:
-                d_new = calculateDiameter(newpolymer)
+                d_new = calculateDiameterDepresso(newpolymer)
             if E_new < E:
                 polymer = newpolymer
                 E = E_new
@@ -342,12 +367,29 @@ def plotEnergyLowTemp(V, T, Ns = 1500, N = 30):
 """
 2 g)
 """
-def calculateDiameterDepresso(polymer):
-    maxDist = 0
-    for i in range(len(polymer)):
-        for j in range(i+1, len(polymer)):
-            s = np.sum((polymer[i]-polymer[j])**2)
-            if s > maxDist:
-                maxDist = s
-    return np.sqrt(maxDist)
 
+def computeAverageDiameterAndSTD(V, T, Ns=1500, N=30):
+    polymer = createPolymer(N)
+    _,_,diameter = metropolisalgoritmen(polymer, V, Ns, T, includeDiamter=True)
+    importantDiameter = diameter[1000:]
+    return np.average(importantDiameter), np.std(importantDiameter, ddof=1)
+
+def plotExpectedAndSTDDiameter(lowTemp, highTemp, TempStep, Ns=1500, N=30):
+    
+    V = np.zeros((N,N))
+    for i in range(N):
+        for j in range(i-1):
+          V[i,j]=(np.random.uniform(-6,-2))*10**(-21)
+
+    V=V+V.transpose()
+
+    TempArray = np.arange(lowTemp,highTemp,TempStep)
+    expectedValue, standardDeviation = np.zeros(len(TempArray)), np.zeros(len(TempArray))
+    for temp_index in range(len(TempArray)):
+        expectedValue[temp_index], standardDeviation[temp_index] = computeAverageDiameterAndSTD(V, TempArray[temp_index], Ns, N)
+    plt.errorbar(TempArray, expectedValue, yerr = standardDeviation)
+    plt.show()
+
+# plotExpectedAndSTDDiameter(lowTemp=10, highTemp=1000, TempStep=100, Ns=1500, N=10)
+
+print(timeit.timeit('plotExpectedAndSTDDiameter(lowTemp=10, highTemp=1000, TempStep=30, Ns=2000, N=30)', "from __main__ import plotExpectedAndSTDDiameter", number = 1))

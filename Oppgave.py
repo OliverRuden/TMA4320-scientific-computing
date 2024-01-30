@@ -339,3 +339,15 @@ def plotEnergyLowTemp(V, T, Ns = 1500, N = 30):
     plt.show()
 
 # plotEnergyLowTemp(V, 20)
+"""
+2 g)
+"""
+def calculateDiameterDepresso(polymer):
+    maxDist = 0
+    for i in range(len(polymer)):
+        for j in range(i, len(polymer)):
+            s = np.sum(np.abs(polymer[i]-polymer[j]))
+            if s > maxDist:
+                maxDist = s
+    return maxDist
+

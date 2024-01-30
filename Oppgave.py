@@ -176,9 +176,15 @@ def makeDiagonalForceArray(N, background_value):
 Her implementerer vi metropolisalgoritmen
 """
 
-def metropolisalgoritmen(polymer, V, Ns, T):
+def calculateDiameter(polymer):            #Her skal vi skrive funksjonen for å regne ut diameteren til et polymer, MÅ ENDRES PÅ
+    return 10
+
+def metropolisalgoritmen(polymer, V, Ns, T, includeDiamter = False):
     E_array=np.zeros(Ns)
     E = calculateEnergy(polymer, V)
+    if includeDiamter:
+        d_array=np.zeros(Ns)
+        d = calculateDiameter(polymer)
     i=0
     N=len(polymer)    
     beta = 1/(k_b*T)
@@ -188,13 +194,25 @@ def metropolisalgoritmen(polymer, V, Ns, T):
         if validPolymer(newpolymer,N):
             i+=1
             E_new=calculateEnergy(newpolymer, V)
+            if includeDiamter:
+                d_new = calculateDiameter(newpolymer)
             if E_new < E:
                 polymer = newpolymer
                 E = E_new
+                if includeDiamter:
+                    d = d_new
             elif np.random.uniform() < np.exp(-beta*(E_new-E)):
                 polymer = newpolymer
                 E = E_new
+                if includeDiamter:
+                    d = d_new
             E_array[i] = E
+            if includeDiamter:
+                d_array[i] = d
+
+    if includeDiamter:
+        return polymer, E_array, d_array
+
     return polymer, E_array
 
 """
@@ -320,4 +338,4 @@ def plotEnergyLowTemp(V, T, Ns = 1500, N = 30):
     plt.title('Energi som funksjon av Monte Carlo-steg')
     plt.show()
 
-plotEnergyLowTemp(V, 20)
+# plotEnergyLowTemp(V, 20)

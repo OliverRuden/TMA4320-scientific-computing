@@ -162,13 +162,12 @@ def makeDiagonalForceArray(N, background_value):
         V[i,i] = 0
         if i > 0:
             V[i,i-1] = 0
-        if i < N-1:
-            V[i+1,i] = 0
+            V[i-1,i] = 0
     return V
 
-# N = 1000
+# N = 15
 # V = makeDiagonalForceArray(N, -4*10**(-21))
-# pol, rot = rotateManyTimes(15,1000)
+# pol, rot = rotateManyTimes(N,1000)
 # illustrationPolymer(pol)
 # print(calculateEnergy(pol, V))
 

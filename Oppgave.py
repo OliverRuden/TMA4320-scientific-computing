@@ -107,7 +107,7 @@ def rotateManyTimes(N, Ns):
 
 
 # """
-# Oppgave g)
+# 1 g)
 # """
 # pol_4, rot_4 = rotateManyTimes(15, 4)
 # print("Med 4 rotasjoner ble så mange gyldige: ", rot_4)
@@ -198,7 +198,7 @@ def metropolisalgoritmen(polymer, V, Ns, T):
     return polymer, E_array
 
 """
-2b) Plotte energien
+2 b) Plotte energien
 """
 
 def plotEnergy(polymer, V, Ns, T):
@@ -211,19 +211,19 @@ def plotEnergy(polymer, V, Ns, T):
     plt.title('Energi som funksjon av Monte Carlo-steg')
     plt.show()
 
-# N = 30
-# V = np.zeros((N,N))-4*10**(-21)
-# for i in range(N):
-#     V[i,i] = 0
-#     if i > 0:
-#         V[i,i-1] = 0
-#     if i < N-1:
-#         V[i+1,i] = 0
+N = 30
+V = np.zeros((N,N))-4*10**(-21)
+for i in range(N):
+    V[i,i] = 0
+    if i > 0:
+        V[i,i-1] = 0
+    if i < N-1:
+        V[i+1,i] = 0
 
 # plotEnergy(createPolymer(30), V, 5000, 370)
 
 """
-2c) Illustrere de to polymerene like
+2 c) Illustrere de to polymerene like
 """
 
 def illustrationOfOnePolymer(polymer):              # Returnerer Grid
@@ -263,12 +263,12 @@ def multiplePlotsPolymers(polymer1,polymer2, title1,title2):
 print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))
 
 """
-2e) Beregne forventningsverdi og standardavvik til energien
+2 e) Beregne forventningsverdi og standardavvik til energien
 """
 
 def computeAverageEnergyAndSTD(V, T, Ns=1500, N=30):
     polymer = createPolymer(N)
-    newpolymer, energy = metropolisalgoritmen(polymer, V, Ns, T)
+    _, energy = metropolisalgoritmen(polymer, V, Ns, T)
     importantEnergy = energy[1000:]
     return np.average(importantEnergy), np.std(importantEnergy, ddof=1)
 
@@ -281,3 +281,22 @@ def plotExpectedAndSTDEnergy(V,lowTemp, highTemp, TempStep, Ns=1500, N=30):
     plt.show()
 
 # plotExpectedAndSTDEnergy(V, lowTemp=10,highTemp=1000,TempStep=30)
+    
+"""
+2 f)
+"""
+
+def plotEnergyLowTemp(V, T, Ns = 1500, N = 30):
+    plt.rcParams.update({'font.size': 20})
+    plt.figure(figsize = (10, 7))
+    for sim in range(10):
+        polymer = createPolymer(N)
+        _, energy = metropolisalgoritmen(polymer, V, Ns, T)
+        plt.plot(energy)
+
+    plt.xlabel(r'Monte Carlo-steg $t$')
+    plt.ylabel('Energi')
+    plt.title('Energi som funksjon av Monte Carlo-steg')
+    plt.show()
+
+plotEnergyLowTemp(V, 20)

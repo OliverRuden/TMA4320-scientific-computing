@@ -259,8 +259,29 @@ def multiplePlotsPolymers(polymer1,polymer2, title1,title2):
 
 # illustrationPolymer(polymer)
 # print(E_array[-1])
-    
-print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))
+
+"""
+2 d) 
+"""
+def createFunkyPotential(N, generalValue, scaling, tuplesToScale):
+    potential = np.zeros((N,N))+generalValue
+    for i in range(N):
+        potential[i,i] = 0
+        if i > 0:
+            potential[i-1,i] = 0
+            potential[i,i-1] = 0
+    for tup in tuplesToScale:
+        potential[tup] = generalValue*scaling
+        potential[tup[1],tup[0]] = generalValue*scaling
+    return potential
+# N = 15
+# V = createFunkyPotential(N,-4*10**(-21), 100, [(0,N-1),(1,N-2),(2,N-3),(3,N-4),(4,N-5),(N-1,N-4)])
+# pol, array = metropolisalgoritmen(createPolymer(N), V, 100, 50)
+# print(calculateEnergy(pol,V))
+# print(min(array))
+# illustrationPolymer(pol)
+
+# print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))
 
 """
 2e) Beregne forventningsverdi og standardavvik til energien

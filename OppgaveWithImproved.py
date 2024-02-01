@@ -5,10 +5,10 @@ import timeit
 
 class Middle:
     def __init__(self, x, y, N):
-        self.position = np.array([x,y])
-        self.beforeMiddle = np.array([0 for i in range(N//2)])
-        self.afterMiddle = np.array([2 for i in range((N-1)//2)])
-        self.map = {0:np.array([0,-1]), 1:np.array([1,0]), 2:np.array([0,1]),3:np.array([-1,0])}
+        self.position = np.array([x,y]) #Positio
+        self.beforeMiddle = np.array([0 for i in range(N//2)]) #Venstre siden av arrayet
+        self.afterMiddle = np.array([2 for i in range((N-1)//2)]) #Høyre siden av arrayet
+        self.map = {0:np.array([0,-1]), 1:np.array([1,0]), 2:np.array([0,1]),3:np.array([-1,0])} #Map a
 
 """
 1 b) Her lager vi polymeret vårt, det er representert i et N*2 diagram, og vi har valgt å holde fast opprunnet midten hvis relevant
@@ -134,19 +134,19 @@ def saveTwoPolymersVer2():
     illustrationPolymerVer2(pol_1000)
     np.savetxt('polymerArray15_1000.txt', pol_1000)
 
-"""
-1 i)
-plotte valid rotations
-"""
+# """
+# 1 i)
+# plotte valid rotations
+# """
 
-def plotValidPercentageVer2(min = 4, max = 500, Ns = 1000):
-    sizes = np.arange(min, max + 1, 10)
-    intSizes = sizes.astype(int)
-    print(intSizes[0])
-    # polymer, validRot = rotateManyTimes(intSizes, Ns)
-    valid = np.array([rotateManyTimesVer2(i, Ns)[1] for i in intSizes])
-    plt.plot(intSizes, valid/Ns)
-    plt.show()
+# def plotValidPercentageVer2(min = 4, max = 500, Ns = 1000):
+#     sizes = np.arange(min, max + 1, 10)
+#     intSizes = sizes.astype(int)
+#     print(intSizes[0])
+#     # polymer, validRot = rotateManyTimes(intSizes, Ns)
+#     valid = np.array([rotateManyTimesVer2(i, Ns)[1] for i in intSizes])
+#     plt.plot(intSizes, valid/Ns)
+#     plt.show()
 
 # print(timeit.timeit('rotateManyTimes(150,10000)', "from __main__ import rotateManyTimes", number = 10))
 
@@ -156,60 +156,60 @@ def plotValidPercentageVer2(min = 4, max = 500, Ns = 1000):
 
 # plotValidPercentage(10, 500)
 
-"""
-Regne ut energien til polymer
-"""
-def calculateEnergyVer2(polymer, V):
-    total = 0
-    neighbourDictionary = {}
-    coordinates = np.copy(polymer.position)
-    for neighbour in polymer.map.values():
-        neighbourDictionary[tuple(coordinates + neighbour)] = [len(polymer.beforeMiddle)]
-    direction = 0
-    coordinates = np.copy(polymer.position)
-    for firstMonomers in range(len(polymer.beforeMiddle)-1,-1,-1):
-        direction = (direction + polymer.beforeMiddle[firstMonomers])%4
-        coordinates += polymer.map[direction]
-        cordTuple = tuple(coordinates)
-        if cordTuple in neighbourDictionary:
-            for nodes in neighbourDictionary[cordTuple]:
-                total += V[nodes, firstMonomers]
-        for neighbour in polymer.map.values():
-            if tuple(coordinates + neighbour) in neighbourDictionary:
-                neighbourDictionary[tuple(coordinates + neighbour)].append(firstMonomers)
-            else:
-                neighbourDictionary[tuple(coordinates + neighbour)] = [firstMonomers]
-    direction = 2
-    coordinates = np.copy(polymer.position)
-    for secondMonomers in range(0, len(polymer.afterMiddle)):
-        direction = (direction + polymer.afterMiddle[secondMonomers]-2)%4
-        coordinates += polymer.map[direction]
-        monomerNumber = len(polymer.beforeMiddle)+1+secondMonomers
-        cordTuple = tuple(coordinates)
-        if cordTuple in neighbourDictionary:
-            for nodes in neighbourDictionary[cordTuple]:
-                total += V[nodes, monomerNumber]
-        for neighbour in polymer.map.values():
-            if tuple(coordinates + neighbour) in neighbourDictionary:
-                neighbourDictionary[tuple(coordinates + neighbour)].append(monomerNumber)
-            else:
-                neighbourDictionary[tuple(coordinates + neighbour)] = [monomerNumber]
+# # """
+# # Regne ut energien til polymer
+# # """
+# # def calculateEnergyVer2(polymer, V):
+# #     total = 0
+# #     neighbourDictionary = {}
+# #     coordinates = np.copy(polymer.position)
+# #     for neighbour in polymer.map.values():
+# #         neighbourDictionary[tuple(coordinates + neighbour)] = [len(polymer.beforeMiddle)]
+# #     direction = 0
+# #     coordinates = np.copy(polymer.position)
+# #     for firstMonomers in range(len(polymer.beforeMiddle)-1,-1,-1):
+# #         direction = (direction + polymer.beforeMiddle[firstMonomers])%4
+# #         coordinates += polymer.map[direction]
+# #         cordTuple = tuple(coordinates)
+# #         if cordTuple in neighbourDictionary:
+# #             for nodes in neighbourDictionary[cordTuple]:
+# #                 total += V[nodes, firstMonomers]
+# #         for neighbour in polymer.map.values():
+# #             if tuple(coordinates + neighbour) in neighbourDictionary:
+# #                 neighbourDictionary[tuple(coordinates + neighbour)].append(firstMonomers)
+# #             else:
+# #                 neighbourDictionary[tuple(coordinates + neighbour)] = [firstMonomers]
+# #     direction = 2
+# #     coordinates = np.copy(polymer.position)
+# #     for secondMonomers in range(0, len(polymer.afterMiddle)):
+# #         direction = (direction + polymer.afterMiddle[secondMonomers]-2)%4
+# #         coordinates += polymer.map[direction]
+# #         monomerNumber = len(polymer.beforeMiddle)+1+secondMonomers
+# #         cordTuple = tuple(coordinates)
+# #         if cordTuple in neighbourDictionary:
+# #             for nodes in neighbourDictionary[cordTuple]:
+# #                 total += V[nodes, monomerNumber]
+# #         for neighbour in polymer.map.values():
+# #             if tuple(coordinates + neighbour) in neighbourDictionary:
+# #                 neighbourDictionary[tuple(coordinates + neighbour)].append(monomerNumber)
+# #             else:
+# #                 neighbourDictionary[tuple(coordinates + neighbour)] = [monomerNumber]
 
-    return total
+# #     return total
 
-def makeDiagonalForceArrayVer2(N, background_value):
-    V = np.zeros((N+1,N+1))+background_value
-    for i in range(N):
-        V[i,i] = 0
-        if i > 0:
-            V[i,i-1] = 0
-            V[i-1,i] = 0
-    print(V)
-    return V
+# def makeDiagonalForceArrayVer2(N, background_value):
+#     V = np.zeros((N+1,N+1))+background_value
+#     for i in range(N):
+#         V[i,i] = 0
+#         if i > 0:
+#             V[i,i-1] = 0
+#             V[i-1,i] = 0
+#     print(V)
+#     return V
 
-N = 15
-V = makeDiagonalForceArrayVer2(N, -4*10**(-21))
-for i in range(10):
-    pol, rot = rotateManyTimesVer2(N,1000)
-    print(calculateEnergyVer2(pol, V))
-    illustrationPolymerVer2(pol)
+# N = 15
+# V = makeDiagonalForceArrayVer2(N, -4*10**(-21))
+# for i in range(10):
+#     pol, rot = rotateManyTimesVer2(N,1000)
+#     print(calculateEnergyVer2(pol, V))
+#     illustrationPolymerVer2(pol)

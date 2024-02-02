@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import timeit
 from scipy.spatial import ConvexHull
+from numba import jit
 
 """
 Definerer viktige konstanter
@@ -33,7 +34,7 @@ def illustrationPolymer(polymer):
 """
 1 e) Sjekker om intakt polymer
 """
-
+@jit
 def validPolymer(polymer, N):
     if len(polymer) != N:
         return False
@@ -58,6 +59,7 @@ def validPolymer(polymer, N):
 """
 1 f) Implementerer rotasjon ov polymeret, som nevnt tidligere holdes opprundet midten fast.
 """
+@jit
 def rotationGoBrrrr(polymer, monomer, positivRetning):
     monomer -= 1
     middleMonomer = len(polymer)//2 #Finner midterste rundet opp, for å låse den...
@@ -176,7 +178,7 @@ def makeDiagonalForceArray(N, background_value):
 2 a)
 Her implementerer vi metropolisalgoritmen, har også lagt inn calculateDiameterDepresso her fra 2g), siden den brukes i metropolisalgoritmen
 """
-
+@jit
 def calculateDiameterDepresso(polymer):
     maxDist = 0
     for i in range(len(polymer)):

@@ -83,24 +83,22 @@ def rotationGoBrrrrVer2(polymer, monomer, positivRetning):
     if middleMonomer > monomer:
         polymer.beforeMiddle[monomer] = (polymer.beforeMiddle[monomer] + 2*positivRetning-1) % 4
         """
-        Positiv retning:
-        delta x = delta y
-        delta y = - delta x
-        Negativ retning:
-        delta x = - delta y
-        delta y = delta x
+        Positive direction:
+        direction = direction + 1
+        Negative Direction:
+        direction = direction - 1
 
-        Bruker også at True kan brukes som 1 og False som 0
+        Follows from that the direction number increases in the negative direction
         """
         return polymer
     polymer.afterMiddle[monomer-middleMonomer] = (polymer.afterMiddle[monomer-middleMonomer] - 2*positivRetning+1) % 4
     """
-        Positiv retning:
-        delta y = delta x
-        delta x = - delta y
-        Negativ retning:
-        delta y = - delta x
-        delta x = delta y
+    Positive direction:
+    direction = direction - 1
+    Negative Direction:
+    direction = direction + 1
+
+    Follows from that the direction number increases in the negative direction
     """
     return polymer
 

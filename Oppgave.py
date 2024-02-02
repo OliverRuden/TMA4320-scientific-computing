@@ -135,7 +135,7 @@ def plotValidPercentage(min = 4, max = 500, Ns = 1000):
     plt.plot(intSizes, valid/Ns)
     plt.show()
 
-# plotValidPercentage(10, 500)
+plotValidPercentage(10, 500)
 
 """
 1 j)

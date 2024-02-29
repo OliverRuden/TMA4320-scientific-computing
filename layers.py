@@ -64,26 +64,22 @@ class Attention(Layer):
 
 class Softmax(Layer):
 
-    def __init__(self,your_arguments_here):
-        """
-        Your code here
-        """
-        return
-
+    def __init__(self):
+        self.P
+        self.Q
+        self.z_l
     
-    def forward(self,x):
-        """
-        Your code here
-        """
-        return
+    def forward(self, z):
+        self.P = np.exp(z - z.max(axis = 1, keepdims = True))  
+        self.Q = np.sum(self.P, axis = 1, keepdims = True)
+        self.z_l = np.divide(self.P, self.Q + 10 ** (-8))
 
+        return self.z_l
 
-    def backward(self,grad):
-        """
-        Your code here
-        """
-        return
+    def backward(self, grad):
+        S = np.divide(self.P, np.multiply(self.Q, self.Q) + 10 ** (-8))
 
+        return np.multiply(grad * self.z_l) - np.multiply(np.sum(np.multiply(grad, S), axis = 1, keepdims = True), self.P)
 
 
 class CrossEntropy(Layer):

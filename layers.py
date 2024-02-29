@@ -88,26 +88,31 @@ class Softmax(Layer):
 
 class CrossEntropy(Layer):
 
-    def __init__(self,your_arguments_here):
-        """
-        Your code here
-        """
-        return
+    def __init__(self):
+        self.Y_hat
+        self.Y
+        self.epsilon = 10**(-8)
+        self.n
 
-        
-
-    def forward(self,x):
+    def forward(self,Z,y):
+        self.n = len(y[0,0])
         """
-        Your code here
+        Initialize the guesses, the one-vector and the solution
         """
-        return
+        self.Y_hat = Z[:,:,-len(n)]
+        self.Y = onehot(y)
 
+        """
+        Calculate the loss value and take the mean over all the testcases
+        """
+        Y_prod = self.Y_hat*self.Y
+        p = np.einsum('m,mn->mn',np.ones(self.n),Y_prod)
+        q = -np.log(p)
+        value = np.mean(q)
+        return value
 
     def backward(self):
-        """
-        Your code here
-        """
-        return
+        return -1/self.n*(self.Y/(self.Y_hat+self.epsilon))
     
 
 

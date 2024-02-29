@@ -77,50 +77,51 @@ class Attention(Layer):
 
 class Softmax(Layer):
 
-    def __init__(self,your_arguments_here):
-        """
-        Your code here
-        """
-        return
-
+    def __init__(self):
+        self.P
+        self.Q
+        self.z_l
     
-    def forward(self,x):
-        """
-        Your code here
-        """
-        return
+    def forward(self, z):
+        self.P = np.exp(z - z.max(axis = 1, keepdims = True))  
+        self.Q = np.sum(self.P, axis = 1, keepdims = True)
+        self.z_l = np.divide(self.P, self.Q + 10 ** (-8))
 
+        return self.z_l
 
-    def backward(self,grad):
-        """
-        Your code here
-        """
-        return
+    def backward(self, grad):
+        S = np.divide(self.P, np.multiply(self.Q, self.Q) + 10 ** (-8))
 
+        return np.multiply(grad * self.z_l) - np.multiply(np.sum(np.multiply(grad, S), axis = 1, keepdims = True), self.P)
 
 
 class CrossEntropy(Layer):
 
-    def __init__(self,your_arguments_here):
-        """
-        Your code here
-        """
-        return
+    def __init__(self):
+        self.Y_hat
+        self.Y
+        self.epsilon = 10**(-8)
+        self.n
 
-        
-
-    def forward(self,x):
+    def forward(self,Z,y):
+        self.n = len(y[0,0])
         """
-        Your code here
+        Initialize the guesses, the one-vector and the solution
         """
-        return
+        self.Y_hat = Z[:,:,-len(n)]
+        self.Y = onehot(y)
 
+        """
+        Calculate the loss value and take the mean over all the testcases
+        """
+        Y_prod = self.Y_hat*self.Y
+        p = np.einsum('m,mn->mn',np.ones(self.n),Y_prod)
+        q = -np.log(p)
+        value = np.mean(q)
+        return value
 
     def backward(self):
-        """
-        Your code here
-        """
-        return
+        return -1/self.n*(self.Y/(self.Y_hat+self.epsilon))
     
 
 

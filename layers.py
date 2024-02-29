@@ -39,19 +39,32 @@ class Layer:
 
 class Attention(Layer):
 
-    def __init__(self,your_arguments_here):
-        """
-        Your code here
-        """
-        return
-
+    def __init__(self, d, k):
         
+        self.W_Q = np.random.randn((k,d))
+        self.W_K = np.random.randn((k,d))
+        self.W_O = np.random.randn((k,d))
+        self.W_V = np.random.randn((k,d))
+        self.zl
+        return 
 
-    def forward(self,x):
+    def forward(self,z):
+
         """
-        Your code here
+        Initialising the D-matrix with the right size. The dimensions we put into softmax are n*n, where z is b*(d*n),
+        so to get the right dimension, we take the length of z[0,0] to get n.
         """
-        return
+        n = len(z[0,0])          
+        D = np.zeros((n,n))
+
+        "Making every lower triangular element negative infitiy"
+
+        i1,i2 = np.tril_indices(n,-1)
+        D[i1,i2] -= np.inf
+
+        # HER MÅ SOFTMAX ENDRES SÅNN AT DEN TAR INN RIKTIGE TING OG FUNKER
+
+        A=Softmax((np.einsum('bdn,kd,kd,bdn->nn', z, self.W_Q, self.W_K, z, optimize = True) + D))
 
 
     def backward(self,grad):

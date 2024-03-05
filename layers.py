@@ -57,20 +57,23 @@ class Attention(Layer):
         n = len(z[0,0])          
         D = np.zeros((n,n))
 
-        "Making every lower triangular element negative infitiy"
+        "Making every lower triangular element of D negative infitiy"
 
         i1,i2 = np.tril_indices(n,-1)
         D[i1,i2] -= np.inf
 
-        # HER MÅ SOFTMAX ENDRES SÅNN AT DEN TAR INN RIKTIGE TING OG FUNKER
+        "Creating a local softmax, since Attention requires a softmax function"
 
-        A=Softmax((np.einsum('bdn,kd,kd,bdn->nn', z, self.W_Q, self.W_K, z, optimize = True) + D))
+        localSoftmax = Softmax()
 
+        A=localSoftmax.forward((np.einsum('bdn,kd,kd,bdn->nn', z, self.W_Q, self.W_K, z, optimize = True) + D))
+
+        self.zl=z+np.einsum('kd,kd,bdn,nn', self.W_O, self.W_V, z, A, optimize = True)
+
+        return self.zl
 
     def backward(self,grad):
-        """
-        Your code here
-        """
+
         return
     
 

@@ -111,7 +111,7 @@ class Softmax(Layer):
     def backward(self, grad):
         S = np.divide(self.P, np.multiply(self.Q, self.Q) + 10 ** (-8))
 
-        return np.multiply(grad * self.z_l) - np.multiply(np.sum(np.multiply(grad, S), axis = 1, keepdims = True), self.P)
+        return np.multiply(grad, self.z_l) - np.multiply(np.sum(np.multiply(grad, S), axis = 1, keepdims = True), self.P)
 
 
 class CrossEntropy(Layer):

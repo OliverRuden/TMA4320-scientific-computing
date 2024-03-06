@@ -87,8 +87,7 @@ class Attention(Layer):
         self.params['W_Q']['d'] = np.einsum('kd,bdn,bno,bdo->bkd',self.params['W_Q']['w'], self.zl, g_S, self.zl, optimize=True)
         self.params['W_K']['d'] = np.einsum('kd,bdn,bon,bdo->bkd',self.params['W_K']['w'], self.zl, g_S, self.zl, optimize=True)
 
-        returnVal = grad + np.einsum('bdo,bno->bdn', g_OV, self.A) + np.einsum('ke,kd,bdn,bno->beo', self.params['W_K']['w'], self.params['W_Q']['w'], self.zl, g_S, optimize=True) + np.einsum('ke,kd,bdn,bon->beo', self.params['W_Q'], self.params['W_K'], self.zl, g_S)
-        return returnVal
+        return grad + np.einsum('bdo,bno->bdn', g_OV, self.A) + np.einsum('ke,kd,bdn,bno->beo', self.params['W_K']['w'], self.params['W_Q']['w'], self.zl, g_S, optimize=True) + np.einsum('ke,kd,bdn,bon->beo', self.params['W_Q'], self.params['W_K'], self.zl, g_S)
 
 
 class Softmax(Layer):

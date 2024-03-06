@@ -34,6 +34,27 @@ class Layer:
         for param in self.params:
             self.params[param]['w'] -= alpha*self.params[param]['d']
 
+        def adamStep(self, j, k, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
+            for param in self.params:
+                G_j = self.params[param]["d"]
+                """
+                Initialize the matricies V and M for each matrix, iter is just a counter on which iteration it is on. 
+                """
+                if "V" not in self.params[param]:
+                    self.params[param]["V"] = np.array([])
+                if "M" not in self.params[param]:
+                    self.params[param]["M"] = np.array([])
+                if j == 0:
+                    self.params[param]["V"].extend(np.zeros_like(G_j))
+                    self.params[param]["M"].extend(np.zeros_like(G_j))
+                self.params[param]["iter"] += 1
+                self.params[param]["M"][k] = beta_1*self.params[param]["M"][k]+(1-beta_1)*G_j
+                self.params[param]["V"][k] = beta_2*self.params[param]["V"][k] + (1-beta_2)*(np.multiply(G_j,G_j))
+                Mhat = (1/(1-beta_1**j))*self.params[param]["M"][k]
+                Vhat = (1/(1-beta_2**j))*self.params[param]["V"][k]
+                self.params[param]["w"] -= alpha*(np.divide(Mhat,np.sqrt(Vhat)+epsilon))
+                
+                
 
 
 

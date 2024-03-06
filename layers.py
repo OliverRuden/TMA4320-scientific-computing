@@ -48,9 +48,6 @@ class Attention(Layer):
 
         self.localSoftmax = Softmax()
 
-        self.zl
-        self.A
-
         self.params = {'W_Q': {'w':W_Q,'d':np.zeros((k,d))},
                        'W_K': {'w':W_K,'d':np.zeros((k,d))},
                        'W_O': {'w':W_O,'d':np.zeros((k,d))},
@@ -97,9 +94,7 @@ class Attention(Layer):
 class Softmax(Layer):
 
     def __init__(self):
-        self.P
-        self.Q
-        self.z_l
+        return
     
     def forward(self, z):
         self.P = np.exp(z - z.max(axis = 1, keepdims = True))  
@@ -117,10 +112,7 @@ class Softmax(Layer):
 class CrossEntropy(Layer):
 
     def __init__(self):
-        self.Y_hat
-        self.Y
         self.epsilon = 10**(-8)
-        self.n
 
     def forward(self,Z,y):
         self.n = len(y[0,0])

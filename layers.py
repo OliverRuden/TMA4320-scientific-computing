@@ -74,7 +74,7 @@ class Attention(Layer):
 
         # Remember to input dimentions of matrice prooduct
 
-        self.zl=z+np.einsum('kd,kd,bdn,bnn->bdn', self.W_O, self.W_V, z, self.A, optimize = True)
+        self.zl=z+np.einsum('kd,kp,bpq,bqn->bdn', self.W_O, self.W_V, z, self.A, optimize = True)
 
         return self.zl
 
@@ -114,7 +114,7 @@ class Softmax(Layer):
     def backward(self, grad):
         S = np.divide(self.P, np.multiply(self.Q, self.Q) + 10 ** (-8))
 
-        return np.multiply(grad * self.z_l) - np.multiply(np.sum(np.multiply(grad, S), axis = 1, keepdims = True), self.P)
+        return np.multiply(grad, self.z_l) - np.multiply(np.sum(np.multiply(grad, S), axis = 1, keepdims = True), self.P)
 
 
 class CrossEntropy(Layer):

@@ -41,10 +41,10 @@ class Attention(Layer):
 
     def __init__(self, d, k):
         
-        W_Q = np.random.randn((k,d))
-        W_K = np.random.randn((k,d))
-        W_O = np.random.randn((k,d))
-        W_V = np.random.randn((k,d))
+        W_Q = np.random.randn(k,d)
+        W_K = np.random.randn(k,d)
+        W_O = np.random.randn(k,d)
+        W_V = np.random.randn(k,d)
 
         self.localSoftmax = Softmax()
 

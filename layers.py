@@ -45,7 +45,13 @@ class Attention(Layer):
         self.W_K = np.random.randn((k,d))
         self.W_O = np.random.randn((k,d))
         self.W_V = np.random.randn((k,d))
+
+        self.localSoftmax = Softmax()
+
         self.zl
+        self.A
+        self.params = {}
+
         return 
 
     def forward(self,z):
@@ -64,17 +70,30 @@ class Attention(Layer):
 
         "Creating a local softmax, since Attention requires a softmax function"
 
-        localSoftmax = Softmax()
+        self.A=self.localSoftmax.forward((np.einsum('bdn,kd,kd,bdn->bnn', z, self.W_Q, self.W_K, z, optimize = True) + D))
 
-        A=localSoftmax.forward((np.einsum('bdn,kd,kd,bdn->nn', z, self.W_Q, self.W_K, z, optimize = True) + D))
+        # Remember to input dimentions of matrice prooduct
 
-        self.zl=z+np.einsum('kd,kd,bdn,nn', self.W_O, self.W_V, z, A, optimize = True)
+        self.zl=z+np.einsum('kd,kd,bdn,bnn->bdn', self.W_O, self.W_V, z, self.A, optimize = True)
 
         return self.zl
 
     def backward(self,grad):
 
-        return
+        # Rememver to input dimentions of matrice product
+
+        g_OV = np.einsum('kd,kd,', self.W_V, self.W_O, grad, optimize=True)
+
+        g_S = self.localSoftmax.backward(np.einsum('',self.zl,g_OV))
+
+        # Remember to store the derivatives or sumething in params dictionairy
+
+        self.params['W_V'] = np.einsum(self.W_V, self.zl, self.A, grad, optimize=True)
+        self.params['W_O'] = np.einsum(self.W_O, grad, self.A, self.zl, optimize=True)
+        self.params['W_Q'] = np.einsum(self.W_Q, self.zl, g_S, self.zl, optimize=True)
+        self.params['W_K'] = np.einsum(self.W_K, self.zl, g_S, self.zl, optimize=True)
+
+        return grad + np.einsum('', g_OV, self.A) + np.einsum('', self.W_K, self.W_Q, self.zl, g_S, optimize=True) + np.einsum('', self.W_Q, self.W_K, self.zl, g_S)
     
 
 

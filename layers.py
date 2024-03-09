@@ -34,22 +34,19 @@ class Layer:
         for param in self.params:
             self.params[param]['w'] -= alpha*self.params[param]['d']
 
-    def adamStep(self, j, k, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
+    def adamStep(self, j, k, totalBaseCase, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
         for param in self.params:
             G_j = self.params[param]["d"]
             """
             Initialize the matricies V and M for each matrix, iter is just a counter on which iteration it is on. 
             """
             if "V" not in self.params[param]:
-                self.params[param]["V"] = np.array([])
+                self.params[param]["V"] = np.zeros((totalBaseCase,)+np.shape(G_j))
             if "M" not in self.params[param]:
-                self.params[param]["M"] = np.array([])
-            if j == 0:
-                self.params[param]["V"].extend(np.zeros_like(G_j))
-                self.params[param]["M"].extend(np.zeros_like(G_j))
-            self.params[param]["iter"] += 1
+                self.params[param]["M"] = np.zeros((totalBaseCase,)+np.shape(G_j))
             self.params[param]["M"][k] = beta_1*self.params[param]["M"][k]+(1-beta_1)*G_j
             self.params[param]["V"][k] = beta_2*self.params[param]["V"][k] + (1-beta_2)*(np.multiply(G_j,G_j))
+            j+=1
             Mhat = (1/(1-beta_1**j))*self.params[param]["M"][k]
             Vhat = (1/(1-beta_2**j))*self.params[param]["V"][k]
             self.params[param]["w"] -= alpha*(np.divide(Mhat,np.sqrt(Vhat)+epsilon))
@@ -309,10 +306,10 @@ class EmbedPosition(Layer):
         #and does gd for the paramters in the params dict
         super().step_gd(step_size)
 
-    def adamStep(self, j, k, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
-        self.embed.adamStep(self, j, k, beta_1, beta_2, alpha, epsilon)
+    def adamStep(self, j, k, totalBaseCase, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
+        self.embed.adamStep(j, k, totalBaseCase, beta_1, beta_2, alpha, epsilon)
 
-        super().adamStep(self, j, k, beta_1, beta_2, alpha, epsilon)
+        super().adamStep(j, k, totalBaseCase, beta_1, beta_2, alpha, epsilon)
 
 
 
@@ -378,3 +375,8 @@ class FeedForward(Layer):
         #Call the step_gd method of the linear layers
         self.l1.step_gd(step_size)
         self.l2.step_gd(step_size)
+    
+    def adamStep(self, j, k, totalBaseCase, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
+        self.l1.adamStep(j, k, totalBaseCase, beta_1, beta_2, alpha, epsilon)
+
+        self.l2.adamStep(j, k, totalBaseCase, beta_1, beta_2, alpha, epsilon)

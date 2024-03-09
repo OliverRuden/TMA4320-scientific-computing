@@ -34,22 +34,19 @@ class Layer:
         for param in self.params:
             self.params[param]['w'] -= alpha*self.params[param]['d']
 
-    def adamStep(self, j, k, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
+    def adamStep(self, j, k, totalBaseCase, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
         for param in self.params:
             G_j = self.params[param]["d"]
             """
             Initialize the matricies V and M for each matrix, iter is just a counter on which iteration it is on. 
             """
             if "V" not in self.params[param]:
-                self.params[param]["V"] = np.array([])
+                self.params[param]["V"] = np.zeros((totalBaseCase,)+np.shape(G_j))
             if "M" not in self.params[param]:
-                self.params[param]["M"] = np.array([])
-            if j == 0:
-                self.params[param]["V"].extend(np.zeros_like(G_j))
-                self.params[param]["M"].extend(np.zeros_like(G_j))
-            self.params[param]["iter"] += 1
+                self.params[param]["M"] = np.zeros((totalBaseCase,)+np.shape(G_j))
             self.params[param]["M"][k] = beta_1*self.params[param]["M"][k]+(1-beta_1)*G_j
             self.params[param]["V"][k] = beta_2*self.params[param]["V"][k] + (1-beta_2)*(np.multiply(G_j,G_j))
+            j+=1
             Mhat = (1/(1-beta_1**j))*self.params[param]["M"][k]
             Vhat = (1/(1-beta_2**j))*self.params[param]["V"][k]
             self.params[param]["w"] -= alpha*(np.divide(Mhat,np.sqrt(Vhat)+epsilon))
@@ -77,7 +74,7 @@ class Attention(Layer):
         return 
 
     def forward(self,z):
-
+        self.z = z
         """
         Initialising the D-matrix with the right size. The dimensions we put into softmax are n*n, where z is b*(d*n),
         so to get the right dimension, we take the length of z[0,0] to get n.
@@ -101,13 +98,13 @@ class Attention(Layer):
     def backward(self,grad):
 
         g_OV = np.einsum('kd,ke,ben->bdn', self.params['W_V']['w'], self.params['W_O']['w'], grad, optimize=True)
-        g_S = self.localSoftmax.backward(np.einsum('bdn,bdo->bno',self.zl,g_OV))
+        g_S = self.localSoftmax.backward(np.einsum('bdn,bdo->bno',self.z,g_OV))
 
-        self.params['W_V']['d'] = np.mean(np.einsum('kd,bdn,bno,bdo->bkd',self.params['W_V']['w'], self.zl, self.A, grad, optimize=True),axis=0)
-        self.params['W_O']['d'] = np.mean(np.einsum('kd,bdn,bon,bdo->bkd',self.params['W_O']['w'], grad, self.A, self.zl, optimize=True),axis=0)
-        self.params['W_Q']['d'] = np.mean(np.einsum('kd,bdn,bno,bdo->bkd',self.params['W_Q']['w'], self.zl, g_S, self.zl, optimize=True),axis=0)
-        self.params['W_K']['d'] = np.mean(np.einsum('kd,bdn,bon,bdo->bkd',self.params['W_K']['w'], self.zl, g_S, self.zl, optimize=True),axis=0)
-        return grad + np.einsum('bdo,bno->bdn', g_OV, self.A) + np.einsum('ke,kd,bdn,bno->beo', self.params['W_K']['w'], self.params['W_Q']['w'], self.zl, g_S, optimize=True) + np.einsum('ke,kd,bdn,bon->beo', self.params['W_Q']['w'], self.params['W_K']['w'], self.zl, g_S)
+        self.params['W_O']['d'] = np.mean(np.einsum('kd,bdn,bno,bfo->bkf',self.params['W_V']['w'], self.z, self.A, grad, optimize=True),axis=0)
+        self.params['W_V']['d'] = np.mean(np.einsum('kd,bdn,bon,bfo->bkf',self.params['W_O']['w'], grad, self.A, self.z, optimize=True),axis=0)
+        self.params['W_K']['d'] = np.mean(np.einsum('kd,bdn,bno,bfo->bkf',self.params['W_Q']['w'], self.z, g_S, self.z, optimize=True),axis=0)
+        self.params['W_Q']['d'] = np.mean(np.einsum('kd,bdn,bon,bfo->bkf',self.params['W_K']['w'], self.z, g_S, self.z, optimize=True),axis=0)
+        return grad + np.einsum('bdo,bno->bdn', g_OV, self.A) + np.einsum('ke,kd,bdn,bno->beo', self.params['W_K']['w'], self.params['W_Q']['w'], self.z, g_S, optimize=True) + np.einsum('ke,kd,bdn,bon->beo', self.params['W_Q']['w'], self.params['W_K']['w'], self.z, g_S)
 
 
 class Softmax(Layer):
@@ -119,7 +116,6 @@ class Softmax(Layer):
         self.P = np.exp(z - z.max(axis = 1, keepdims = True))  
         self.Q = np.sum(self.P, axis = 1, keepdims = True)
         self.z_l = np.divide(self.P, self.Q + 10 ** (-8))
-
         return self.z_l
 
     def backward(self, grad):
@@ -133,24 +129,30 @@ class CrossEntropy(Layer):
         self.epsilon = 10**(-8)
 
     def forward(self,Z,y):
-        self.n = np.size(y[0,0])
+        self.Z = Z
+        self.n = np.shape(y)[1]
+
+        self.Y_hat = Z[:,:,-self.n:]
+        self.m = np.shape(self.Y_hat)[1]
+        self.Y = onehot(y,self.m)
+
         """
         Initialize the guesses, the one-vector and the solution
         """
-        self.Y_hat = Z[:,:,-self.n:]
-        self.Y = onehot(y,np.shape(self.Y_hat)[1])
 
         """
         Calculate the loss value and take the mean over all the testcases
         """
         Y_prod = np.multiply(self.Y_hat,self.Y)
-        p = np.einsum('m,bmn->bmn',np.ones(self.n),Y_prod)
+        p = np.sum(Y_prod, axis = 1)
         q = -np.log(p+self.epsilon)
         value = np.mean(q)
         return value
 
     def backward(self):
-        return -1/self.n*(self.Y/(self.Y_hat+self.epsilon))
+        self.Y_mod = np.zeros_like(self.Z)
+        self.Y_mod[:,:,-self.n:] = self.Y
+        return -1/self.n*(self.Y_mod/(self.Z+self.epsilon))
     
 
 
@@ -304,6 +306,11 @@ class EmbedPosition(Layer):
         #and does gd for the paramters in the params dict
         super().step_gd(step_size)
 
+    def adamStep(self, j, k, totalBaseCase, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
+        self.embed.adamStep(j, k, totalBaseCase, beta_1, beta_2, alpha, epsilon)
+
+        super().adamStep(j, k, totalBaseCase, beta_1, beta_2, alpha, epsilon)
+
 
 
 
@@ -368,3 +375,8 @@ class FeedForward(Layer):
         #Call the step_gd method of the linear layers
         self.l1.step_gd(step_size)
         self.l2.step_gd(step_size)
+    
+    def adamStep(self, j, k, totalBaseCase, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
+        self.l1.adamStep(j, k, totalBaseCase, beta_1, beta_2, alpha, epsilon)
+
+        self.l2.adamStep(j, k, totalBaseCase, beta_1, beta_2, alpha, epsilon)

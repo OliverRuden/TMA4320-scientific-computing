@@ -33,7 +33,6 @@ class Layer:
         """
         for param in self.params:
             self.params[param]['w'] -= alpha*self.params[param]['d']
-            # print(np.linalg.norm(self.params[param]['w']-a))
 
     def adamStep(self, j, k, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
         for param in self.params:
@@ -312,7 +311,7 @@ class EmbedPosition(Layer):
 
     def adamStep(self, j, k, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
         self.embed.adamStep(self, j, k, beta_1, beta_2, alpha, epsilon)
-        
+
         super().adamStep(self, j, k, beta_1, beta_2, alpha, epsilon)
 
 

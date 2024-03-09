@@ -100,15 +100,15 @@ class Attention(Layer):
 
     def backward(self,grad):
 
-        g_OV = np.einsum('kd,ke,ben->bdn', self.params['W_V'], self.params['W_O'], grad, optimize=True)
+        g_OV = np.einsum('kd,ke,ben->bdn', self.params['W_V']['w'], self.params['W_O']['w'], grad, optimize=True)
         g_S = self.localSoftmax.backward(np.einsum('bdn,bdo->bno',self.zl,g_OV))
 
-        self.params['W_V']['d'] = np.einsum('kd,bdn,bno,bdo->bkd',self.params['W_V']['w'], self.zl, self.A, grad, optimize=True)
-        self.params['W_O']['d'] = np.einsum('kd,bdn,bon,bdo->bkd',self.params['W_O']['w'], grad, self.A, self.zl, optimize=True)
-        self.params['W_Q']['d'] = np.einsum('kd,bdn,bno,bdo->bkd',self.params['W_Q']['w'], self.zl, g_S, self.zl, optimize=True)
-        self.params['W_K']['d'] = np.einsum('kd,bdn,bon,bdo->bkd',self.params['W_K']['w'], self.zl, g_S, self.zl, optimize=True)
-
-        return grad + np.einsum('bdo,bno->bdn', g_OV, self.A) + np.einsum('ke,kd,bdn,bno->beo', self.params['W_K']['w'], self.params['W_Q']['w'], self.zl, g_S, optimize=True) + np.einsum('ke,kd,bdn,bon->beo', self.params['W_Q'], self.params['W_K'], self.zl, g_S)
+        self.params['W_V']['d'] = np.mean(np.einsum('kd,bdn,bno,bdo->bkd',self.params['W_V']['w'], self.zl, self.A, grad, optimize=True),axis=0)
+        self.params['W_O']['d'] = np.mean(np.einsum('kd,bdn,bon,bdo->bkd',self.params['W_O']['w'], grad, self.A, self.zl, optimize=True),axis=0)
+        self.params['W_Q']['d'] = np.mean(np.einsum('kd,bdn,bno,bdo->bkd',self.params['W_Q']['w'], self.zl, g_S, self.zl, optimize=True),axis=0)
+        self.params['W_K']['d'] = np.mean(np.einsum('kd,bdn,bon,bdo->bkd',self.params['W_K']['w'], self.zl, g_S, self.zl, optimize=True),axis=0)
+        print(self.params['W_V']['d'])
+        return grad + np.einsum('bdo,bno->bdn', g_OV, self.A) + np.einsum('ke,kd,bdn,bno->beo', self.params['W_K']['w'], self.params['W_Q']['w'], self.zl, g_S, optimize=True) + np.einsum('ke,kd,bdn,bon->beo', self.params['W_Q']['w'], self.params['W_K']['w'], self.zl, g_S)
 
 
 class Softmax(Layer):
@@ -125,7 +125,6 @@ class Softmax(Layer):
 
     def backward(self, grad):
         S = np.divide(self.P, np.multiply(self.Q, self.Q) + 10 ** (-8))
-
         return np.multiply(grad, self.z_l) - np.multiply(np.sum(np.multiply(grad, S), axis = 1, keepdims = True), self.P)
 
 
@@ -135,19 +134,19 @@ class CrossEntropy(Layer):
         self.epsilon = 10**(-8)
 
     def forward(self,Z,y):
-        self.n = len(y[0,0])
+        self.n = np.size(y[0,0])
         """
         Initialize the guesses, the one-vector and the solution
         """
-        self.Y_hat = Z[:,:,-len(n)]
-        self.Y = onehot(y)
+        self.Y_hat = Z[:,:,-self.n:]
+        self.Y = onehot(y,np.shape(self.Y_hat)[1])
 
         """
         Calculate the loss value and take the mean over all the testcases
         """
-        Y_prod = self.Y_hat*self.Y
-        p = np.einsum('m,mn->mn',np.ones(self.n),Y_prod)
-        q = -np.log(p)
+        Y_prod = np.multiply(self.Y_hat,self.Y)
+        p = np.einsum('m,bmn->bmn',np.ones(self.n),Y_prod)
+        q = -np.log(p+self.epsilon)
         value = np.mean(q)
         return value
 
@@ -288,7 +287,7 @@ class EmbedPosition(Layer):
 
         #Compute gradient (average over B batches) of loss wrt positional embedding w:
         self.params['Wp']['d'] = np.zeros_like(self.w)
-        self.params['Wp']['d'] += np.sum(grad,axis=0)/b
+        self.params['Wp']['d'][:,:np.shape(grad)[2]] += np.sum(grad,axis=0)/b
 
         #Use backwards pass of the linear layer
         self.embed.backward(grad)

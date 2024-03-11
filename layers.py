@@ -35,21 +35,28 @@ class Layer:
             self.params[param]['w'] -= alpha*self.params[param]['d']
 
     def adamStep(self, j, k, totalBaseCase, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
+
+        """
+        The Adam algorithm as presented in algorithm 3 in the project description
+        """
+
         for param in self.params:
             G_j = self.params[param]["d"]
             """
-            Initialize the matricies V and M for each matrix, iter is just a counter on which iteration it is on. 
+            Initialize the matrices V and M for each matrix, j is a counter on which iteration it is on. 
             """
             if "V" not in self.params[param]:
-                self.params[param]["V"] = np.zeros((totalBaseCase,)+np.shape(G_j))
+                self.params[param]["V"] = np.zeros((totalBaseCase,) + np.shape(G_j))
+
             if "M" not in self.params[param]:
-                self.params[param]["M"] = np.zeros((totalBaseCase,)+np.shape(G_j))
-            self.params[param]["M"][k] = beta_1*self.params[param]["M"][k]+(1-beta_1)*G_j
-            self.params[param]["V"][k] = beta_2*self.params[param]["V"][k] + (1-beta_2)*(np.multiply(G_j,G_j))
-            j+=1
-            Mhat = (1/(1-beta_1**j))*self.params[param]["M"][k]
-            Vhat = (1/(1-beta_2**j))*self.params[param]["V"][k]
-            self.params[param]["w"] -= alpha*(np.divide(Mhat,np.sqrt(Vhat)+epsilon))
+                self.params[param]["M"] = np.zeros((totalBaseCase,) + np.shape(G_j))
+
+            self.params[param]["M"][k] = beta_1 * self.params[param]["M"][k] + (1 - beta_1) * G_j
+            self.params[param]["V"][k] = beta_2 * self.params[param]["V"][k] + (1 - beta_2) * (np.multiply(G_j, G_j))
+            j += 1
+            Mhat = (1 / (1 - beta_1**j)) * self.params[param]["M"][k]
+            Vhat = (1 / (1 - beta_2**j)) * self.params[param]["V"][k]
+            self.params[param]["w"] -= alpha * (np.divide(Mhat, np.sqrt(Vhat) + epsilon))
                 
                 
 
@@ -58,11 +65,18 @@ class Layer:
 class Attention(Layer):
 
     def __init__(self, d, k):
+
+        """
+        Initializing the parameter matrices and adding these to the params-dictionary. These could've been implemented as LinearLayers, 
+        but we decided not to do so. 
+        """
         
         W_Q = np.random.randn(k,d)
         W_K = np.random.randn(k,d)
         W_O = np.random.randn(k,d)
         W_V = np.random.randn(k,d)
+
+        "Creating a local softmax, since Attention requires a softmax function"
 
         self.localSoftmax = Softmax()
 
@@ -76,26 +90,35 @@ class Attention(Layer):
     def forward(self,z):
         self.z = z
         """
-        Initialising the D-matrix with the right size. The dimensions we put into softmax are n*n, where z is b*(d*n),
+        Initializing the D-matrix with the right size. The dimensions we put into softmax are n*n, where z is b*(d*n),
         so to get the right dimension, we take the length of z[0,0] to get n.
         """
         n = len(z[0,0])          
         D = np.zeros((n,n))
 
-        "Making every lower triangular element of D negative infitiy"
+        "Making every lower triangular element of D negative infitiy."
 
-        i1,i2 = np.tril_indices(n,-1)
-        D[i1,i2] -= np.inf
+        i1, i2 = np.tril_indices(n, -1)
+        D[i1, i2] -= np.inf
 
-        "Creating a local softmax, since Attention requires a softmax function"
+        """
+        Calculating the A and z_l matrices as in equation (20) in the project description.
+        """
 
-        self.A=self.localSoftmax.forward((np.einsum('beo,ke,kd,bdn->bon', z, self.params['W_Q']['w'], self.params['W_K']['w'], z, optimize = True) + D))
+        self.A = self.localSoftmax.forward((np.einsum('beo,ke,kd,bdn->bon', z, self.params['W_Q']['w'], self.params['W_K']['w'], z, optimize = True) + D))
 
-        self.zl=z+np.einsum('kd,kp,bpq,bqn->bdn', self.params['W_O']['w'], self.params['W_V']['w'], z, self.A, optimize = True)
+        self.zl = z + np.einsum('kd,kp,bpq,bqn->bdn', self.params['W_O']['w'], self.params['W_V']['w'], z, self.A, optimize = True)
 
         return self.zl
 
     def backward(self,grad):
+
+        """
+        Calculating g_OV and g_S, and returning the gradient as seen in equation (22) in the project description.
+
+        Updating the gradients in the dictionary. 
+
+        """
 
         g_OV = np.einsum('kd,ke,ben->bdn', self.params['W_V']['w'], self.params['W_O']['w'], grad, optimize=True)
         g_S = self.localSoftmax.backward(np.einsum('bdn,bdo->bno',self.z,g_OV, optimize=True))
@@ -104,6 +127,7 @@ class Attention(Layer):
         self.params['W_V']['d'] = np.mean(np.einsum('kd,bdn,bon,bfo->bkf',self.params['W_O']['w'], grad, self.A, self.z, optimize=True),axis=0)
         self.params['W_K']['d'] = np.mean(np.einsum('kd,bdn,bno,bfo->bkf',self.params['W_Q']['w'], self.z, g_S, self.z, optimize=True),axis=0)
         self.params['W_Q']['d'] = np.mean(np.einsum('kd,bdn,bon,bfo->bkf',self.params['W_K']['w'], self.z, g_S, self.z, optimize=True),axis=0)
+
         return grad + np.einsum('bdo,bno->bdn', g_OV, self.A, optimize = True) + np.einsum('ke,kd,bdn,bno->beo', self.params['W_K']['w'], self.params['W_Q']['w'], self.z, g_S, optimize=True) + np.einsum('ke,kd,bdn,bon->beo', self.params['W_Q']['w'], self.params['W_K']['w'], self.z, g_S, optimize = True)
 
 
@@ -113,13 +137,27 @@ class Softmax(Layer):
         return
     
     def forward(self, z):
+
+        """
+        Initializing P and Q,
+
+        returning the probability distribution P / Q.
+        """
+
         self.P = np.exp(z - z.max(axis = 1, keepdims = True))  
         self.Q = np.sum(self.P, axis = 1, keepdims = True)
         self.z_l = np.divide(self.P, self.Q + 10 ** (-8))
+
         return self.z_l
 
     def backward(self, grad):
+
+        """
+        Returning the gradient as in equation (19) from the project description.
+        """
+
         S = np.divide(self.P, np.multiply(self.Q, self.Q) + 10 ** (-8))
+
         return np.multiply(grad, self.z_l) - np.multiply(np.sum(np.multiply(grad, S), axis = 1, keepdims = True), self.P)
 
 
@@ -128,7 +166,7 @@ class CrossEntropy(Layer):
     def __init__(self):
         self.epsilon = 10**(-8)
 
-    def forward(self,Z,y):
+    def forward(self, Z, y):
         self.Z = Z
         self.n = np.shape(y)[1]
 
@@ -143,16 +181,17 @@ class CrossEntropy(Layer):
         """
         Calculate the loss value and take the mean over all the testcases
         """
-        Y_prod = np.multiply(self.Y_hat,self.Y)
+        Y_prod = np.multiply(self.Y_hat, self.Y)
         p = np.sum(Y_prod, axis = 1)
-        q = -np.log(p+self.epsilon)
+        q = -np.log(p + self.epsilon)
         value = np.mean(q)
+
         return value
 
     def backward(self):
         self.Y_mod = np.zeros_like(self.Z)
         self.Y_mod[:,:,-self.n:] = self.Y
-        return -1/self.n*(self.Y_mod/(self.Z+self.epsilon))
+        return -1 / self.n * (self.Y_mod / (self.Z + self.epsilon))
     
 
 

@@ -42,40 +42,24 @@ class Layer:
         """
         The Adam algorithm as presented in algorithm 3 in the project description
         """
-
-        # for param in self.params:
-        #     G_j = self.params[param]["d"]
-        #     """
-        #     Initialize the matrices V and M for each matrix, j is a counter on which iteration it is on. 
-        #     """
-        #     if "V" not in self.params[param]:
-        #         self.params[param]["V"] = np.zeros((totalBaseCase,) + np.shape(G_j))
-
-        #     if "M" not in self.params[param]:
-        #         self.params[param]["M"] = np.zeros((totalBaseCase,) + np.shape(G_j))
-
-        #     self.params[param]["M"][k] = beta_1 * self.params[param]["M"][k] + (1 - beta_1) * G_j
-        #     self.params[param]["V"][k] = beta_2 * self.params[param]["V"][k] + (1 - beta_2) * (np.multiply(G_j, G_j))
-        #     j += 1
-        #     Mhat = (1 / (1 - beta_1**j)) * self.params[param]["M"][k]
-        #     Vhat = (1 / (1 - beta_2**j)) * self.params[param]["V"][k]
-        #     self.params[param]["w"] -= alpha * (np.divide(Mhat, np.sqrt(Vhat) + epsilon))
+        #Loop over all parameters
         for param in self.params:
             G_j = self.params[param]["d"]
 
+            #If M and V doesn't exist, create them, and retrieve their value
             if "m" not in self.params[param]:
                 self.params[param]["m"] = np.zeros_like(G_j)
                 self.params[param]["v"] = np.zeros_like(G_j)
-
             M = self.params[param]["m"]
             V = self.params[param]["v"]
 
+            #Update M and V, and calculate M-hat and V-hat
             self.params[param]["m"] = beta_1 * M + (1 - beta_1) * G_j
             self.params[param]["v"] = beta_2 * V + (1 - beta_2) * (np.multiply(G_j, G_j))
-
             M_hat = M / (1-beta_1**(self.j))
             V_hat = V / (1-beta_2**(self.j))
-
+            
+            #Change the parameter matrix
             self.params[param]["w"] -= alpha * (np.divide(M_hat, np.sqrt(V_hat) + epsilon))
 
                 
@@ -193,6 +177,9 @@ class CrossEntropy(Layer):
         self.epsilon = 10**(-8)
 
     def forward(self, Z, y):
+        """
+        Initialize relevant matrixes and scalar values for later calculations
+        """
         self.Z = Z
         self.n = np.shape(y)[-1]
         self.y = y
@@ -201,9 +188,6 @@ class CrossEntropy(Layer):
         self.m = np.shape(self.Y_hat)[1]
         self.Y = onehot(y,self.m)
 
-        """
-        Initialize the guesses, the one-vector and the solution
-        """
 
         """
         Calculate the loss value and take the mean over all the testcases
@@ -216,6 +200,9 @@ class CrossEntropy(Layer):
         return value
 
     def backward(self):
+        """
+        Calculate the derivative as presented in appendix A.6
+        """
         Y_mod = np.zeros_like(self.Z)
         Y_mod[:,:,-self.n:] = onehot(self.y, self.m)
         grad = -(1/self.n)*np.divide(Y_mod,self.Z+self.epsilon)

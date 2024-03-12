@@ -28,17 +28,17 @@ def training(neuralNetwork, objectFunction, dataSet, nIter, m, alpha = 0.01, bet
 def generateAllAddition():
     a=np.arange(0,10000,1)
 
-    dict = {}
+    add_dict = {}
     x = [1000,100,10,1]
 
     for i in range(len(x)):
 
         if i==0:
-            dict[x[i]] = a//x[i]
+            add_dict[x[i]] = a//x[i]
         else:
-            dict[x[i]] = (a-(a//x[i-1])*x[i-1])//x[i]
+            add_dict[x[i]] = (a-(a//x[i-1])*x[i-1])//x[i]
 
-    y = np.transpose(np.append(np.array([dict[1000]]),np.array([dict[100], dict[10], dict[1]]), axis = 0))
+    y = np.transpose(np.append(np.array([add_dict[1000]]),np.array([add_dict[100], add_dict[10], add_dict[1]]), axis = 0))
     y = y.astype(int)
     z = np.zeros(10**4)
     for i in range(len(a)):

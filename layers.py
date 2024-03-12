@@ -368,10 +368,10 @@ class EmbedPosition(Layer):
         #and does gd for the paramters in the params dict
         super().step_gd(step_size)
 
-    def adamStep(self, j, k, totalBaseCase, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
-        self.embed.adamStep(j, k, totalBaseCase, beta_1, beta_2, alpha, epsilon)
+    def adamStep(self, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
+        self.embed.adamStep(beta_1, beta_2, alpha, epsilon)
 
-        super().adamStep(j, k, totalBaseCase, beta_1, beta_2, alpha, epsilon)
+        super().adamStep(beta_1, beta_2, alpha, epsilon)
 
 
 
@@ -439,7 +439,7 @@ class FeedForward(Layer):
         self.l1.step_gd(step_size)
         self.l2.step_gd(step_size)
     
-    def adamStep(self, j, k, totalBaseCase, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
-        self.l1.adamStep(j, k, totalBaseCase, beta_1, beta_2, alpha, epsilon)
+    def adamStep(self, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
+        self.l1.adamStep(beta_1, beta_2, alpha, epsilon)
 
-        self.l2.adamStep(j, k, totalBaseCase, beta_1, beta_2, alpha, epsilon)
+        self.l2.adamStep(beta_1, beta_2, alpha, epsilon)

@@ -11,17 +11,18 @@ def training(neuralNetwork, objectFunction, dataSet, nIter, m, alpha = 0.01, bet
     Kommentar om training function
     """
     L = []
+    x_data, y_data = dataSet[0], dataSet[1]
     for i in range(nIter):
         L_temp = 0
-        for batchNumber in range(np.shape(dataSet[0])[0]):
-            x = dataSet[0][batchNumber]
+        for batchNumber in range(np.shape(x_data)[0]):
+            x = x_data[batchNumber]
             X = onehot(x,m)
             Z = neuralNetwork.forward(X)
-            L_temp += objectFunction.forward(Z,dataSet[1][batchNumber])
+            L_temp += objectFunction.forward(Z,y_data[batchNumber])
             grad_Z = objectFunction.backward()
             neuralNetwork.backward(grad_Z)
-            neuralNetwork.adamStep(alpha = alpha, beta_1 = beta_1, beta_2 = beta_2)
-        L.append(L_temp/np.shape(dataSet[0])[0])
+            neuralNetwork.adamStep(alpha = alpha)
+        L.append(L_temp/np.shape(x_data[0])[0])
     return L
 
 def generateAllAddition():

@@ -33,6 +33,10 @@ class Layer:
         for param in self.params:
             self.params[param]['w'] -= alpha*self.params[param]['d']
 
+    """
+    Problem 2.3: Adam step
+    """
+
     def adamStep(self, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
         self.j += 1
         """
@@ -75,7 +79,10 @@ class Layer:
             self.params[param]["w"] -= alpha * (np.divide(M_hat, np.sqrt(V_hat) + epsilon))
 
                 
-                
+
+"""
+Problem 2.2: Implementing Softmax, Cross-entropy and Attention
+"""             
 
 
 

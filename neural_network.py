@@ -41,8 +41,8 @@ class NeuralNetwork():
                 layer.step_gd(alpha)
         return
     
-    def adamStep(self, iter, caseSet, totalBaseCases, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
+    def adamStep(self, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
         for layer in self.layers:
             #Check if layer is of class a class that has parameters
             if isinstance(layer,(LinearLayer,EmbedPosition,FeedForward,Attention)):
-                layer.adamStep(iter,caseSet, totalBaseCases, beta_1, beta_2, alpha, epsilon)
+                layer.adamStep(beta_1, beta_2, alpha, epsilon)

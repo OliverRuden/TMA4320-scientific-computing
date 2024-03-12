@@ -7,7 +7,6 @@ class Layer:
     Base class for layers in the neural network with forward and backward pass.
     """
     def __init__(self):
-        
         return
 
     def forward(self,inputs):
@@ -34,29 +33,47 @@ class Layer:
         for param in self.params:
             self.params[param]['w'] -= alpha*self.params[param]['d']
 
-    def adamStep(self, j, k, totalBaseCase, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
-
+    def adamStep(self, beta_1 = 0.9, beta_2 = 0.999, alpha = 0.01, epsilon = 10**(-8)):
+        self.j += 1
         """
         The Adam algorithm as presented in algorithm 3 in the project description
         """
 
+        # for param in self.params:
+        #     G_j = self.params[param]["d"]
+        #     """
+        #     Initialize the matrices V and M for each matrix, j is a counter on which iteration it is on. 
+        #     """
+        #     if "V" not in self.params[param]:
+        #         self.params[param]["V"] = np.zeros((totalBaseCase,) + np.shape(G_j))
+
+        #     if "M" not in self.params[param]:
+        #         self.params[param]["M"] = np.zeros((totalBaseCase,) + np.shape(G_j))
+
+        #     self.params[param]["M"][k] = beta_1 * self.params[param]["M"][k] + (1 - beta_1) * G_j
+        #     self.params[param]["V"][k] = beta_2 * self.params[param]["V"][k] + (1 - beta_2) * (np.multiply(G_j, G_j))
+        #     j += 1
+        #     Mhat = (1 / (1 - beta_1**j)) * self.params[param]["M"][k]
+        #     Vhat = (1 / (1 - beta_2**j)) * self.params[param]["V"][k]
+        #     self.params[param]["w"] -= alpha * (np.divide(Mhat, np.sqrt(Vhat) + epsilon))
         for param in self.params:
             G_j = self.params[param]["d"]
-            """
-            Initialize the matrices V and M for each matrix, j is a counter on which iteration it is on. 
-            """
-            if "V" not in self.params[param]:
-                self.params[param]["V"] = np.zeros((totalBaseCase,) + np.shape(G_j))
 
-            if "M" not in self.params[param]:
-                self.params[param]["M"] = np.zeros((totalBaseCase,) + np.shape(G_j))
+            if "m" not in self.params[param]:
+                self.params[param]["m"] = np.zeros_like(G_j)
+                self.params[param]["v"] = np.zeros_like(G_j)
 
-            self.params[param]["M"][k] = beta_1 * self.params[param]["M"][k] + (1 - beta_1) * G_j
-            self.params[param]["V"][k] = beta_2 * self.params[param]["V"][k] + (1 - beta_2) * (np.multiply(G_j, G_j))
-            j += 1
-            Mhat = (1 / (1 - beta_1**j)) * self.params[param]["M"][k]
-            Vhat = (1 / (1 - beta_2**j)) * self.params[param]["V"][k]
-            self.params[param]["w"] -= alpha * (np.divide(Mhat, np.sqrt(Vhat) + epsilon))
+            M = self.params[param]["m"]
+            V = self.params[param]["v"]
+
+            self.params[param]["m"] = beta_1 * M + (1 - beta_1) * G_j
+            self.params[param]["v"] = beta_2 * V + (1 - beta_2) * (np.multiply(G_j, G_j))
+
+            M_hat = M / (1-beta_1**(self.j))
+            V_hat = V / (1-beta_2**(self.j))
+
+            self.params[param]["w"] -= alpha * (np.divide(M_hat, np.sqrt(V_hat) + epsilon))
+
                 
                 
 
@@ -65,7 +82,7 @@ class Layer:
 class Attention(Layer):
 
     def __init__(self, d, k):
-
+        self.j = 0
         """
         Initializing the parameter matrices and adding these to the params-dictionary. These could've been implemented as LinearLayers, 
         but we decided not to do so. 
@@ -134,6 +151,7 @@ class Attention(Layer):
 class Softmax(Layer):
 
     def __init__(self):
+        self.j = 0
         return
     
     def forward(self, z):
@@ -164,11 +182,13 @@ class Softmax(Layer):
 class CrossEntropy(Layer):
 
     def __init__(self):
+        self.j = 0
         self.epsilon = 10**(-8)
 
     def forward(self, Z, y):
         self.Z = Z
-        self.n = np.shape(y)[1]
+        self.n = np.shape(y)[-1]
+        self.y = y
 
         self.Y_hat = Z[:,:,-self.n:]
         self.m = np.shape(self.Y_hat)[1]
@@ -189,9 +209,10 @@ class CrossEntropy(Layer):
         return value
 
     def backward(self):
-        self.Y_mod = np.zeros_like(self.Z)
-        self.Y_mod[:,:,-self.n:] = self.Y
-        return -1 / self.n * (self.Y_mod / (self.Z + self.epsilon))
+        Y_mod = np.zeros_like(self.Z)
+        Y_mod[:,:,-self.n:] = onehot(self.y, self.m)
+        grad = -(1/self.n)*np.divide(Y_mod,self.Z+self.epsilon)
+        return grad
     
 
 
@@ -205,6 +226,7 @@ class LinearLayer(Layer):
         Constructor takes input size and output size of layer 
         and scale for the weights
         """
+        self.j = 0
 
         #Initialize weights using a sample from the normal distribution
         #scaled with the init_scale
@@ -253,6 +275,7 @@ class Relu(Layer):
     """
 
     def __init__(self):
+        self.j = 0
         return
 
     def relu(self,x):
@@ -274,7 +297,7 @@ class Relu(Layer):
 
 class EmbedPosition(Layer):
     def __init__(self,n_max,m,d,init_scale=1e-1):   
-
+        self.j = 0
         """
         n_max: maximum length of input sequence
         m: number of items in the vocabulary / number of integers
@@ -357,6 +380,7 @@ class FeedForward(Layer):
 
 
     def __init__(self,d, p,init_scale = 0.1):
+        self.j = 0
         """
         Input:
             d: input dimension of first layer and output of second

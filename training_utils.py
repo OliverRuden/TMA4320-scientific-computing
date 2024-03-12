@@ -23,7 +23,7 @@ def training(neuralNetwork, objectFunction, dataSet, nIter, m, alpha = 0.01, bet
             neuralNetwork.backward(grad_Z)
             neuralNetwork.adamStep(alpha = alpha)
         L.append(L_temp/np.shape(x_data[0])[0])
-        if L[-1] < 0.01:
+        if L[-1] < 0.0001:
             return L
     return L
 

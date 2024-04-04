@@ -16,7 +16,7 @@ class Interpolator():
         self.fw = fw
         # Extract timestamps as number of seconds after the start of the file
         # Saves a bit of bother with dealing with np.datetime objects elsewhere
-        self.times = np.array([(t - d.time[0])/np.timedelta64(1, 's') for t in d.time[:]], dtype=np.float64)
+        self.times = np.array([(t - dataset.time[0])/np.timedelta64(1, 's') for t in dataset.time[:]], dtype=np.float64)
         self.depth = np.array(self.dataset.h)
         
     def get_interpolators(self, X, it):
